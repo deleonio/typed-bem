@@ -62,9 +62,9 @@ Here’s an example of how to use `typed-bem`:
 import bem from 'typed-bem';
 
 // Create a BEM block generator
-const buttonBem = bem('button', ['primary', 'secondary'], {
-	icon: ['small', 'large'],
-	text: ['bold', 'italic'],
+const buttonBem = bem('button', ['primary', 'secondary'] as const, {
+	icon: ['small', 'large'] as const,
+	text: ['bold', 'italic'] as const,
 });
 
 // Generate block classes
@@ -83,6 +83,12 @@ console.log(buttonBem('icon'));
 console.log(buttonBem('icon', { small: true }));
 // Output: "button__icon button__icon--small"
 ```
+
+---
+
+### The Importance of `as const`
+
+When defining block or element modifiers in Typed BEM, using `as const` is crucial to ensure that arrays are treated as literal types rather than generalized types like `string[]`. Without `as const`, TypeScript interprets an array of strings as a mutable list, losing the specificity of individual values. By adding `as const`, the values are treated as a readonly tuple of exact strings (e.g., `['primary', 'secondary']` becomes `readonly ['primary', 'secondary']`). This enables TypeScript to validate the exact modifiers allowed and prevents invalid ones at compile time, significantly enhancing type safety and improving the developer experience (DX).
 
 ---
 
@@ -127,9 +133,9 @@ A function that generates BEM class names for the block, its elements, and modif
 ### 1. Basic Usage
 
 ```typescript
-const bemGenerator = bem('card', ['featured'], {
-	header: ['compact', 'spaced'],
-	footer: ['highlighted'],
+const bemGenerator = bem('card', ['featured'] as const, {
+	header: ['compact', 'spaced'] as const,
+	footer: ['highlighted'] as const,
 });
 
 // Block
@@ -154,8 +160,8 @@ console.log(bemGenerator('header', { compact: true }));
 ### 2. Handling Errors
 
 ```typescript
-const bemGenerator = bem('button', ['primary'], {
-	icon: ['small', 'large'],
+const bemGenerator = bem('button', ['primary'] as const, {
+	icon: ['small', 'large'] as const,
 });
 
 // Invalid element
@@ -180,7 +186,7 @@ try {
 ### 3. Block Modifiers Only
 
 ```typescript
-const bemGenerator = bem('button', ['primary', 'secondary']);
+const bemGenerator = bem('button', ['primary', 'secondary'] as const);
 
 console.log(bemGenerator({ primary: true }));
 // Output: "button button--primary"

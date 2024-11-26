@@ -3,9 +3,9 @@ import bem from '../src/index';
 import { describe, it } from 'vitest';
 
 describe('bem', () => {
-	const myBem = bem('collapsable', ['accordion', 'details'], {
-		button: ['active', 'disabled'],
-		content: ['block', 'inline'],
+	const myBem = bem('collapsable', ['accordion', 'details'] as const, {
+		button: ['active', 'disabled'] as const,
+		content: ['block', 'inline'] as const,
 	});
 
 	it('should generate class for button with active modifier', () => {
@@ -49,24 +49,24 @@ describe('bem', () => {
 
 	it('should throw an error for empty block name', () => {
 		expect(() =>
-			bem('', [], {
-				button: ['active'],
+			bem('', [] as const, {
+				button: ['active'] as const,
 			}),
 		).to.throws('Block name must be a string and not empty!');
 	});
 
 	it('should throw an error for empty element name', () => {
 		expect(() =>
-			bem('collapsable', [], {
-				'': ['active'],
+			bem('collapsable', [] as const, {
+				'': ['active'] as const,
 			}),
 		).to.throws('Element names from the block "collapsable" must be a string and not empty!');
 	});
 
 	it('should throw an error for empty modifier name', () => {
 		expect(() =>
-			bem('collapsable', [], {
-				button: [''],
+			bem('collapsable', [] as const, {
+				button: [''] as const,
 			}),
 		).to.throws('Modifier names of element "button" from the block "collapsable" must be a string and not empty!');
 	});
@@ -126,8 +126,8 @@ describe('bem', () => {
 
 	it('should throw an error for empty block modifier name', () => {
 		expect(() =>
-			bem('collapsable', [''], {
-				button: ['active'],
+			bem('collapsable', [''] as const, {
+				button: ['active'] as const,
 			}),
 		).to.throws('Modifier names from the block "collapsable" must be a string and not empty!');
 	});
