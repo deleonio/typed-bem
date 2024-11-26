@@ -1,0 +1,70 @@
+{
+	"name": "typed-bem",
+	"version": "1.0.0-beta.0",
+	"author": {
+		"name": "Martin Oppitz",
+		"email": "github@martinoppitz.com",
+		"url": "https://martinoppitz.com"
+	},
+	"contributors": [
+		{
+			"name": "Martin Oppitz",
+			"email": "github@martinoppitz.com",
+			"url": "https://martinoppitz.com"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/deleonio/typed-bem-class-generator.git"
+	},
+	"bugs": {
+		"url": "https://github.com/deleonio/typed-bem-class-generator/issues",
+		"email": "github@martinoppitz.com"
+	},
+	"keywords": [
+		"typescript",
+		"bem",
+		"class-names",
+		"css",
+		"generator",
+		"frontend"
+	],
+	"description": "A TypeScript library for generating BEM class names.",
+	"license": "MIT",
+	"dependencies": {
+		"easy-bem": "1.1.1"
+	},
+	"devDependencies": {
+		"@types/chai": "5.0.1",
+		"chai": "5.1.2",
+		"eslint": "9.15.0",
+		"nodemon": "3.1.7",
+		"npm-check-updates": "17.1.11",
+		"prettier": "3.4.1",
+		"ts-node": "10.9.2",
+		"typescript": "5.7.2",
+		"tsup": "8.3.5",
+		"unbuild": "2.0.0",
+		"vitest": "2.1.6"
+	},
+	"scripts": {
+		"dev": "nodemon src/index.ts",
+		"lint": "tsc --noEmit && eslint src",
+		"test": "vitest",
+		"update": "ncu -u",
+		"build": "unbuild",
+		"prepack": "unbuild"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"main": "./dist/index.cjs",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	]
+}
