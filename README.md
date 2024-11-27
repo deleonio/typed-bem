@@ -160,9 +160,16 @@ console.log(bemGenerator('header', { compact: true }));
 ### 2. Handling Errors
 
 ```typescript
-const bemGenerator = bem('button', ['primary'] as const, {
-	icon: ['small', 'large'] as const,
-});
+const bemGenerator = bem(
+	'button',
+	['primary'] as const,
+	{
+		icon: ['small', 'large'] as const,
+	},
+	{
+		validation: 'strict',
+	},
+);
 
 // Invalid element
 try {
