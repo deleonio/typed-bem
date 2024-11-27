@@ -50,31 +50,11 @@ const bem = <ModifiersByBlock extends readonly string[], ModifiersByElement exte
 			throw new Error(`Modifier names of element "${elementName}" from the block "${blockName}" must be a string and not empty!`);
 		}
 	});
+
 	return <ElementName extends keyof ModifiersByElement>(
 		elementNameOrBlockModifiers?: ElementName | Partial<Record<ModifiersByBlock[number], boolean>>,
 		modifiers: Partial<Record<ModifiersByElement[ElementName][number], boolean>> = {},
-	): string => {
-		if (typeof elementNameOrBlockModifiers === 'string') {
-			const modifierNames = Object.keys(modifiers);
-			if (!elementNames.includes(elementNameOrBlockModifiers)) {
-				throw new Error(`Element "${elementNameOrBlockModifiers}" is not defined in block "${blockName}"!`);
-			} else if (modifierNames.some((modifier) => !elementModifiers[elementNameOrBlockModifiers].includes(modifier))) {
-				throw new Error(
-					`Modifier "${modifierNames.find((modifier) => !elementModifiers[elementNameOrBlockModifiers].includes(modifier))}" is not defined in element "${elementNameOrBlockModifiers}" of block "${blockName}"!`,
-				);
-			}
-			return blockBem(elementNameOrBlockModifiers, modifiers);
-		} else if (typeof elementNameOrBlockModifiers === 'object' && elementNameOrBlockModifiers !== null) {
-			if (Object.keys(elementNameOrBlockModifiers).some((modifier) => !blockModifiers.includes(modifier))) {
-				throw new Error(
-					`Modifier "${Object.keys(elementNameOrBlockModifiers).find((modifier) => !blockModifiers.includes(modifier))}" is not defined in block "${blockName}"!`,
-				);
-			}
-			return blockBem(elementNameOrBlockModifiers);
-		} else {
-			return blockBem();
-		}
-	};
+	): string => blockBem(elementNameOrBlockModifiers as string, modifiers);
 };
 
 export default bem;

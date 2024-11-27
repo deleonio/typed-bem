@@ -33,20 +33,6 @@ describe('bem', () => {
 		expect(result).to.equal('collapsable__button collapsable__button--disabled');
 	});
 
-	it('should throw an error for invalid element name', () => {
-		expect(() => myBem('invalidElement' as any, {})).to.throws('Element "invalidElement" is not defined in block "collapsable"!');
-	});
-
-	it('should throw an error for invalid modifier name', () => {
-		expect(() => myBem('button', { invalidModifier: true })).to.throws('Modifier "invalidModifier" is not defined in element "button" of block "collapsable"!');
-	});
-
-	it('should throw an error for partially invalid modifiers', () => {
-		expect(() => myBem('content', { block: true, invalidModifier: true })).to.throws(
-			'Modifier "invalidModifier" is not defined in element "content" of block "collapsable"!',
-		);
-	});
-
 	it('should throw an error for empty block name', () => {
 		expect(() =>
 			bem('', [] as const, {
@@ -118,10 +104,6 @@ describe('bem', () => {
 	it('should ignore false block modifiers', () => {
 		const result = myBem({ accordion: false, details: true });
 		expect(result).to.equal('collapsable collapsable--details');
-	});
-
-	it('should throw an error for invalid block modifier name', () => {
-		expect(() => myBem({ invalidModifier: true })).to.throws('Modifier "invalidModifier" is not defined in block "collapsable"!');
 	});
 
 	it('should throw an error for empty block modifier name', () => {
