@@ -1,154 +1,160 @@
 import { expect } from 'chai';
-import bem from '../src/index';
-import { beforeAll, describe, it } from 'vitest';
+import { describe, it } from 'vitest';
+import typedBem from '../src/index';
 
-describe('bem', () => {
-	describe('common loose mode', () => {
-		const myBem = bem('collapsable', ['accordion', 'details'] as const, {
-			button: ['active', 'disabled'] as const,
-			content: ['block', 'inline'] as const,
-		});
+type MyBlocks = {
+	collapsable: {
+		modifiers: 'accordion' | 'details';
+		elements: {
+			button: {
+				modifiers: 'active' | 'disabled';
+			};
+			content: {
+				modifiers: 'block' | 'inline';
+			};
+		};
+	};
+	header: {
+		modifiers: 'sticky' | 'fixed';
+		elements: {
+			title: {
+				modifiers: 'large' | 'small';
+			};
+			nav: {};
+		};
+	};
+	footer: {
+		elements: {
+			link: {
+				modifiers: 'visited' | 'unvisited';
+			};
+			info: {
+				modifiers: 'detailed' | 'summary';
+			};
+		};
+	};
+};
 
-		it('should generate class for button with active modifier', () => {
-			const result = myBem('button', { active: true });
-			expect(result).to.equal('collapsable__button collapsable__button--active');
-		});
+describe('typedBem', () => {
+	const bem = typedBem<MyBlocks>();
 
-		it('should generate class for content with block and inline modifiers', () => {
-			const result = myBem('content', { block: true, inline: true });
-			expect(result).to.equal('collapsable__content collapsable__content--block collapsable__content--inline');
-		});
-
-		it('should generate class for button with no modifiers', () => {
-			const result = myBem('button', {});
-			expect(result).to.equal('collapsable__button');
-		});
-
-		it('should generate class for content with no modifiers', () => {
-			const result = myBem('content', {});
-			expect(result).to.equal('collapsable__content');
-		});
-
-		it('should ignore false modifiers', () => {
-			const result = myBem('button', { active: false, disabled: true });
-			expect(result).to.equal('collapsable__button collapsable__button--disabled');
-		});
-
-		it('should throw an error for empty block name', () => {
-			expect(() =>
-				bem('', [] as const, {
-					button: ['active'] as const,
-				}),
-			).to.throws('Block name must be a string and not empty!');
-		});
-
-		it('should throw an error for empty element name', () => {
-			expect(() =>
-				bem('collapsable', [] as const, {
-					'': ['active'] as const,
-				}),
-			).to.throws('Element names from the block "collapsable" must be a string and not empty!');
-		});
-
-		it('should throw an error for empty modifier name', () => {
-			expect(() =>
-				bem('collapsable', [] as const, {
-					button: [''] as const,
-				}),
-			).to.throws('Modifier names of element "button" from the block "collapsable" must be a string!');
-		});
-
-		it('should not throw if we have no elements', () => {
-			expect(() => bem('collapsable')).to.not.throw();
-		});
-
-		it('should not throw if we have no modifiers', () => {
-			expect(() => bem('collapsable')).to.not.throw();
-		});
-
-		it('should give block class name', () => {
-			expect(myBem()).to.equal('collapsable');
-		});
-
-		it('should give block element class name', () => {
-			expect(myBem('button')).to.equal('collapsable__button');
-		});
-
-		it('should give only block class name, if element name is undefined and modifiers are set', () => {
-			expect(
-				myBem(undefined, {
-					inline: true,
-				}),
-			).to.equal('collapsable');
-		});
-
-		it('should generate class for block with accordion modifier', () => {
-			const result = myBem({ accordion: true });
-			expect(result).to.equal('collapsable collapsable--accordion');
-		});
-
-		it('should generate class for block with details modifier', () => {
-			const result = myBem({ details: true });
-			expect(result).to.equal('collapsable collapsable--details');
-		});
-
-		it('should generate class for block with multiple modifiers', () => {
-			const result = myBem({ accordion: true, details: true });
-			expect(result).to.equal('collapsable collapsable--accordion collapsable--details');
-		});
-
-		it('should generate class for block with no modifiers', () => {
-			const result = myBem({});
-			expect(result).to.equal('collapsable');
-		});
-
-		it('should ignore false block modifiers', () => {
-			const result = myBem({ accordion: false, details: true });
-			expect(result).to.equal('collapsable collapsable--details');
-		});
-
-		it('should generate class for block with no modifiers when empty object is passed', () => {
-			const result = myBem({});
-			expect(result).to.equal('collapsable');
-		});
-
-		it('should generate class for block with no modifiers when undefined is passed', () => {
-			const result = myBem(undefined);
-			expect(result).to.equal('collapsable');
-		});
+	it('should generate block class name with modifier', () => {
+		const result = bem('collapsable', { accordion: true });
+		expect(result).to.equal('collapsable collapsable--accordion');
 	});
 
-	describe('strict mode', () => {
-		const myBem = bem(
-			'collapsable',
-			['accordion', 'details'] as const,
-			{
-				button: ['active', 'disabled'] as const,
-				content: ['block', 'inline'] as const,
-			},
-			{
-				validation: 'strict',
-			},
-		);
+	it('should generate element class name with modifier', () => {
+		const result = bem('collapsable', 'button', { active: true });
+		expect(result).to.equal('collapsable__button collapsable__button--active');
+	});
 
-		it('should throw an error for invalid block modifier name', () => {
-			expect(() => myBem({ invalidModifier: true })).to.throws('Modifier "invalidModifier" is not defined in block "collapsable"!');
-		});
+	it('should generate block class name without modifier', () => {
+		const result = bem('collapsable');
+		expect(result).to.equal('collapsable');
+	});
 
-		it('should throw an error for invalid element name', () => {
-			expect(() => myBem('invalidElement' as any, {})).to.throws('Element "invalidElement" is not defined in block "collapsable"!');
-		});
+	it('should generate element class name without modifier', () => {
+		const result = bem('collapsable', 'content');
+		expect(result).to.equal('collapsable__content');
+	});
 
-		it('should throw an error for invalid modifier name', () => {
-			expect(() => myBem('button', { invalidModifier: true })).to.throws(
-				'Modifier "invalidModifier" is not defined in element "button" of block "collapsable"!',
-			);
-		});
+	it('should ignore false modifiers', () => {
+		const result = bem('collapsable', 'button', { active: false, disabled: true });
+		expect(result).to.equal('collapsable__button collapsable__button--disabled');
+	});
 
-		it('should throw an error for partially invalid modifiers', () => {
-			expect(() => myBem('content', { block: true, invalidModifier: true })).to.throws(
-				'Modifier "invalidModifier" is not defined in element "content" of block "collapsable"!',
-			);
-		});
+	it('should handle multiple true modifiers', () => {
+		const result = bem('collapsable', { accordion: true, details: true });
+		expect(result).to.equal('collapsable collapsable--accordion collapsable--details');
+	});
+
+	it('should handle multiple false modifiers', () => {
+		const result = bem('collapsable', { accordion: false, details: false });
+		expect(result).to.equal('collapsable');
+	});
+
+	it('should handle mixed true and false modifiers', () => {
+		const result = bem('collapsable', { accordion: true, details: false });
+		expect(result).to.equal('collapsable collapsable--accordion');
+	});
+
+	it('should handle element with multiple true modifiers', () => {
+		const result = bem('collapsable', 'button', { active: true, disabled: true });
+		expect(result).to.equal('collapsable__button collapsable__button--active collapsable__button--disabled');
+	});
+
+	it('should handle element with multiple false modifiers', () => {
+		const result = bem('collapsable', 'button', { active: false, disabled: false });
+		expect(result).to.equal('collapsable__button');
+	});
+
+	it('should handle element with mixed true and false modifiers', () => {
+		const result = bem('collapsable', 'button', { active: true, disabled: false });
+		expect(result).to.equal('collapsable__button collapsable__button--active');
+	});
+
+	it('should generate header block class name with modifier', () => {
+		const result = bem('header', { sticky: true });
+		expect(result).to.equal('header header--sticky');
+	});
+
+	it('should generate header element class name with modifier', () => {
+		const result = bem('header', 'title', { large: true });
+		expect(result).to.equal('header__title header__title--large');
+	});
+
+	it('should generate footer block class name without modifier', () => {
+		const result = bem('footer');
+		expect(result).to.equal('footer');
+	});
+
+	it('should generate footer element class name with modifier', () => {
+		const result = bem('footer', 'link', { visited: true });
+		expect(result).to.equal('footer__link footer__link--visited');
+	});
+
+	it('should generate header element class name without modifier', () => {
+		const result = bem('header', 'nav');
+		expect(result).to.equal('header__nav');
+	});
+
+	it('should generate footer element class name without modifier', () => {
+		const result = bem('footer', 'info');
+		expect(result).to.equal('footer__info');
+	});
+
+	it('should handle multiple true modifiers for header', () => {
+		const result = bem('header', { sticky: true, fixed: true });
+		expect(result).to.equal('header header--sticky header--fixed');
+	});
+
+	it('should handle multiple false modifiers for header', () => {
+		const result = bem('header', { sticky: false, fixed: false });
+		expect(result).to.equal('header');
+	});
+
+	it('should handle mixed true and false modifiers for header', () => {
+		const result = bem('header', { sticky: true, fixed: false });
+		expect(result).to.equal('header header--sticky');
+	});
+
+	it('should handle element with multiple true modifiers for footer', () => {
+		const result = bem('footer', 'info', { detailed: true, summary: true });
+		expect(result).to.equal('footer__info footer__info--detailed footer__info--summary');
+	});
+
+	it('should handle element with multiple false modifiers for footer', () => {
+		const result = bem('footer', 'info', { detailed: false, summary: false });
+		expect(result).to.equal('footer__info');
+	});
+
+	it('should handle element with mixed true and false modifiers for footer', () => {
+		const result = bem('footer', 'info', { detailed: true, summary: false });
+		expect(result).to.equal('footer__info footer__info--detailed');
+		expect(
+			bem('header', 'nav', {
+				egal: true,
+			}),
+		).to.equal('header__nav header__nav--egal');
 	});
 });

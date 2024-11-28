@@ -1,105 +1,64 @@
 import { default as easyBem } from 'easy-bem';
 
-type GeneratorOptions = {
-	validation: 'loose' | 'strict';
+export type BemModifiers = {
+	modifiers?: string;
+};
+
+export type BemElements = {
+	[elementName: string]: BemModifiers;
+};
+
+export type BemBlocks = {
+	[blockName: string]: BemModifiers & {
+		elements?: BemElements;
+	};
 };
 
 /**
- * Creates a typed BEM (Block Element Modifier) class generator function.
+ * A utility function to generate BEM (Block Element Modifier) class names with TypeScript type safety.
  *
- * @template ModifiersByBlock - An array of block modifier names.
- * @template ModifiersByElement - A record type where keys are element names and values are arrays of modifier names.
+ * @template B - A type representing the structure of the BEM blocks, elements, and modifiers.
  *
- * @param {string} blockName - The name of the BEM block. Must be a non-empty string.
- * @param {ModifiersByBlock} [blockModifiers=[]] - An array of valid modifier names for the block.
- * @param {ModifiersByElement} [elementModifiers={}] - An object where keys are element names and values are arrays of valid modifier names for those elements.
- * @param {GeneratorOptions} [options={ validation: 'loose' }] - Options for the generator, including validation mode.
- *
- * @returns {(elementName: string, modifiers: Partial<Record<ModifiersByElement[string][number], boolean>>) => string}
- * A function that generates a BEM class string for a given element and its modifiers.
- *
- * @throws {Error} If the block name is not a non-empty string.
- * @throws {Error} If the block does not have at least one modifier.
- * @throws {Error} If any element name is not a non-empty string.
- * @throws {Error} If any element does not have at least one modifier.
- * @throws {Error} If any modifier name is not a non-empty string.
- * @throws {Error} If an element name is not defined in the block.
- * @throws {Error} If a modifier name is not defined for the specified element.
- * @throws {Error} If a modifier name is not defined for the block.
+ * @returns A function that generates BEM class names.
  *
  * @example
  * ```typescript
- * const bemGenerator = bem('button', ['primary', 'secondary'], {
- *   icon: ['small', 'large'],
- *   text: ['bold', 'italic']
- * });
+ * const bem = typedBem<{
+ *   block: {
+ *     modifiers: 'modifier1' | 'modifier2';
+ *     elements: {
+ *       element: {
+ *         modifiers: 'modifierA' | 'modifierB';
+ *       };
+ *     };
+ *   };
+ * }>();
  *
- * const className = bemGenerator('icon', { small: true, large: false });
- * // className will be 'button__icon button__icon--small'
+ * // Generate block class name
+ * bem('block', { modifier1: true }); // "block block--modifier1"
+ *
+ * // Generate element class name
+ * bem('block', 'element', { modifierA: true }); // "block__element block__element--modifierA"
  * ```
+ *
+ * @param blockName - The name of the BEM block.
+ * @param blockModifiersOrElementName - Either an object representing the block modifiers or the name of the element.
+ * @param elementModifiers - An object representing the element modifiers.
+ *
+ * @returns The generated BEM class name.
  */
-const bem = <ModifiersByBlock extends readonly string[], ModifiersByElement extends Record<string, readonly string[]>>(
-	blockName: string,
-	blockModifiers: ModifiersByBlock = [] as never as ModifiersByBlock,
-	elementModifiers: ModifiersByElement = {} as ModifiersByElement,
-	options: GeneratorOptions = {
-		validation: 'loose',
-	},
-) => {
-	if (typeof blockName !== 'string' || blockName.length === 0) {
-		throw new Error('Block name must be a string and not empty!');
-	}
-	const blockBem = easyBem(blockName);
-	if (blockModifiers.length === 0) {
-		throw new Error(`Block "${blockName}" must have at least one modifier!`);
-	}
-	blockModifiers.forEach((modifier) => {
-		if (typeof modifier !== 'string') {
-			throw new Error(`Modifier names from the block "${blockName}" must be a string!`);
+const typedBem = <B extends BemBlocks>() => {
+	const blocks = new Map<string, ReturnType<typeof easyBem>>();
+	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
+		blockName: BlockName,
+		blockModifiersOrElementName?: Partial<Record<NonNullable<B[BlockName]['modifiers']>, boolean>> | ElementName,
+		elementModifiers?: Partial<Record<NonNullable<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers']>, boolean>>,
+	) => {
+		if (!blocks.has(blockName as string)) {
+			blocks.set(blockName as string, easyBem(blockName as string));
 		}
-	});
-	const elementNames = Object.keys(elementModifiers);
-	elementNames.forEach((elementName) => {
-		if (elementName.length === 0) {
-			throw new Error(`Element names from the block "${blockName}" must be a string and not empty!`);
-		} else if (elementModifiers[elementName].length === 0) {
-			throw new Error(`Element "${elementName}" from the block "${blockName}" must have at least one modifier!`);
-		} else if (elementModifiers[elementName].some((modifier) => typeof modifier !== 'string')) {
-			throw new Error(`Modifier names of element "${elementName}" from the block "${blockName}" must be a string!`);
-		}
-	});
-	if (options.validation === 'loose') {
-		return <ElementName extends keyof ModifiersByElement>(
-			elementNameOrBlockModifiers?: ElementName | Partial<Record<ModifiersByBlock[number], boolean>>,
-			modifiers: Partial<Record<ModifiersByElement[ElementName][number], boolean>> = {},
-		): string => blockBem(elementNameOrBlockModifiers as string, modifiers);
-	} else {
-		return <ElementName extends keyof ModifiersByElement>(
-			elementNameOrBlockModifiers?: ElementName | Partial<Record<ModifiersByBlock[number], boolean>>,
-			modifiers: Partial<Record<ModifiersByElement[ElementName][number], boolean>> = {},
-		): string => {
-			if (typeof elementNameOrBlockModifiers === 'string') {
-				const modifierNames = Object.keys(modifiers);
-				if (!elementNames.includes(elementNameOrBlockModifiers)) {
-					throw new Error(`Element "${elementNameOrBlockModifiers}" is not defined in block "${blockName}"!`);
-				} else if (modifierNames.some((modifier) => !elementModifiers[elementNameOrBlockModifiers].includes(modifier))) {
-					throw new Error(
-						`Modifier "${modifierNames.find((modifier) => !elementModifiers[elementNameOrBlockModifiers].includes(modifier))}" is not defined in element "${elementNameOrBlockModifiers}" of block "${blockName}"!`,
-					);
-				}
-				return blockBem(elementNameOrBlockModifiers, modifiers);
-			} else if (typeof elementNameOrBlockModifiers === 'object' && elementNameOrBlockModifiers !== null) {
-				if (Object.keys(elementNameOrBlockModifiers).some((modifier) => !blockModifiers.includes(modifier))) {
-					throw new Error(
-						`Modifier "${Object.keys(elementNameOrBlockModifiers).find((modifier) => !blockModifiers.includes(modifier))}" is not defined in block "${blockName}"!`,
-					);
-				}
-				return blockBem(elementNameOrBlockModifiers);
-			} else {
-				return blockBem();
-			}
-		};
-	}
+		return blocks.get(blockName as string)!(blockModifiersOrElementName as string, elementModifiers);
+	};
 };
 
-export default bem;
+export default typedBem;
