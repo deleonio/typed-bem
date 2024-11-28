@@ -19,10 +19,13 @@ type GeneratorOptions = {
  * A function that generates a BEM class string for a given element and its modifiers.
  *
  * @throws {Error} If the block name is not a non-empty string.
+ * @throws {Error} If the block does not have at least one modifier.
  * @throws {Error} If any element name is not a non-empty string.
+ * @throws {Error} If any element does not have at least one modifier.
  * @throws {Error} If any modifier name is not a non-empty string.
  * @throws {Error} If an element name is not defined in the block.
  * @throws {Error} If a modifier name is not defined for the specified element.
+ * @throws {Error} If a modifier name is not defined for the block.
  *
  * @example
  * ```typescript
@@ -47,6 +50,9 @@ const bem = <ModifiersByBlock extends readonly string[], ModifiersByElement exte
 		throw new Error('Block name must be a string and not empty!');
 	}
 	const blockBem = easyBem(blockName);
+	if (blockModifiers.length === 0) {
+		throw new Error(`Block "${blockName}" must have at least one modifier!`);
+	}
 	blockModifiers.forEach((modifier) => {
 		if (typeof modifier !== 'string') {
 			throw new Error(`Modifier names from the block "${blockName}" must be a string!`);
@@ -56,6 +62,8 @@ const bem = <ModifiersByBlock extends readonly string[], ModifiersByElement exte
 	elementNames.forEach((elementName) => {
 		if (elementName.length === 0) {
 			throw new Error(`Element names from the block "${blockName}" must be a string and not empty!`);
+		} else if (elementModifiers[elementName].length === 0) {
+			throw new Error(`Element "${elementName}" from the block "${blockName}" must have at least one modifier!`);
 		} else if (elementModifiers[elementName].some((modifier) => typeof modifier !== 'string')) {
 			throw new Error(`Modifier names of element "${elementName}" from the block "${blockName}" must be a string!`);
 		}

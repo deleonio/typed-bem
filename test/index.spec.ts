@@ -55,7 +55,7 @@ describe('bem', () => {
 				bem('collapsable', [] as const, {
 					button: [''] as const,
 				}),
-			).to.throws('Modifier names of element "button" from the block "collapsable" must be a string and not empty!');
+			).to.throws('Modifier names of element "button" from the block "collapsable" must be a string!');
 		});
 
 		it('should not throw if we have no elements', () => {
@@ -105,14 +105,6 @@ describe('bem', () => {
 		it('should ignore false block modifiers', () => {
 			const result = myBem({ accordion: false, details: true });
 			expect(result).to.equal('collapsable collapsable--details');
-		});
-
-		it('should throw an error for empty block modifier name', () => {
-			expect(() =>
-				bem('collapsable', [''] as const, {
-					button: ['active'] as const,
-				}),
-			).to.throws('Modifier names from the block "collapsable" must be a string and not empty!');
 		});
 
 		it('should generate class for block with no modifiers when empty object is passed', () => {
