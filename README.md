@@ -204,6 +204,35 @@ console.log(bemGenerator({ primary: true, secondary: false }));
 
 ---
 
+---
+
+### 4. If you need no modifiers
+
+> Hint: You must use an empty array `[''] as const` to indicate that there are no modifiers.
+
+```typescript
+const bemGenerator = bem('button', [''] as const);
+const bemGenerator = bem('input', ['error'] as const, {
+	error: [''] as const,
+});
+
+console.log(bemGenerator());
+// Output: "button"
+
+console.log(bemGenerator({ error: true }));
+// Output: "input input--error"
+
+console.log(bemGenerator('error');
+// Output: "input__error"
+
+console.log(bemGenerator('error', {
+  large: true
+});
+// TypeError: Modifier "large" is not defined in element "error" of block "input"!
+```
+
+---
+
 ## Error Handling
 
 The library validates your inputs and throws descriptive errors when:

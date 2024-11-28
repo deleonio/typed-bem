@@ -47,17 +47,17 @@ const bem = <ModifiersByBlock extends readonly string[], ModifiersByElement exte
 		throw new Error('Block name must be a string and not empty!');
 	}
 	const blockBem = easyBem(blockName);
-	blockModifiers.forEach((elementName) => {
-		if (elementName.length === 0) {
-			throw new Error(`Modifier names from the block "${blockName}" must be a string and not empty!`);
+	blockModifiers.forEach((modifier) => {
+		if (typeof modifier !== 'string') {
+			throw new Error(`Modifier names from the block "${blockName}" must be a string!`);
 		}
 	});
 	const elementNames = Object.keys(elementModifiers);
 	elementNames.forEach((elementName) => {
 		if (elementName.length === 0) {
 			throw new Error(`Element names from the block "${blockName}" must be a string and not empty!`);
-		} else if (elementModifiers[elementName].some((modifier) => typeof modifier !== 'string' || modifier === '')) {
-			throw new Error(`Modifier names of element "${elementName}" from the block "${blockName}" must be a string and not empty!`);
+		} else if (elementModifiers[elementName].some((modifier) => typeof modifier !== 'string')) {
+			throw new Error(`Modifier names of element "${elementName}" from the block "${blockName}" must be a string!`);
 		}
 	});
 	if (options.validation === 'loose') {
