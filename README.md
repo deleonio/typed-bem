@@ -14,6 +14,9 @@
 
 ## Key Features
 
+- **Type Inference**: Automatically infers types based on the provided BEM structure.
+- **No External Dependencies**: Pure TypeScript implementation with no external dependencies.
+- **Flexible API**: Supports complex BEM structures with nested elements and modifiers.
 - **Self-Contained API**: All types are inferred automatically within the library; there’s no need to import or use external types.
 - **Enhanced Modifier Handling**: If modifiers are declared as `null`, they are optional (`undefined`) when calling the BEM generator.
 - **Type-Safe**: Guarantees consistent and predictable class names at compile time.
