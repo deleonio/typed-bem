@@ -4,10 +4,8 @@ type NonEmptyString<T extends string> = T extends '' ? null : T;
 
 type IfNullThenUndefined<C, T> = C extends null ? undefined : T;
 
-// type IfNullThenUndefined<C, T, E> = C extends null ? T : E;
-
 type BemModifiers = {
-	modifiers: string | NonEmptyString<''>;
+	modifiers: Set<string | NonEmptyString<''>> | never;
 };
 
 type BemElements = {
@@ -33,8 +31,11 @@ type BemBlocks = {
  *   block: {
  *     modifiers: 'modifier1' | 'modifier2';
  *     elements: {
- *       element: {
+ *       element1: {
  *         modifiers: 'modifierA' | 'modifierB';
+ *       };
+ *       element2: {
+ *         modifiers: never;
  *       };
  *     };
  *   };
@@ -43,28 +44,18 @@ type BemBlocks = {
  * // Generate block class name
  * bem('block', { modifier1: true }); // "block block--modifier1"
  *
- * // Generate element class name
- * bem('block', 'element', { modifierA: true }); // "block__element block__element--modifierA"
- * ```
+ * // Generate element1 class name
+ * bem('block', 'element1', { modifierA: true }); // "block__element block__element--modifierA"
  *
- * @param blockName - The name of the BEM block.
- * @param blockModifiersOrElementName - Either an object representing the block modifiers or the name of the element.
- * @param elementModifiers - An object representing the element modifiers.
- *
- * @returns The generated BEM class name.
+ * // Invalid: Passing modifiers to element2 (will throw a TypeScript error)
+ * bem('block', 'element2', { modifierA: true }); // "block__element block__element--modifierA"
  */
-
 const typedBem = <B extends BemBlocks>() => {
 	const blocks = new Map<string, ReturnType<typeof easyBem>>();
 	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
 		blockName: BlockName,
-		blockModifiersOrElementName?:
-			| IfNullThenUndefined<B[BlockName]['modifiers'], Partial<Record<NonNullable<B[BlockName]['modifiers']>, boolean>>>
-			| ElementName,
-		elementModifiers?: IfNullThenUndefined<
-			NonNullable<B[BlockName]['elements']>[ElementName]['modifiers'],
-			Partial<Record<NonNullable<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers']>, boolean>>
-		>,
+		blockModifiersOrElementName?: IfNullThenUndefined<B[BlockName]['modifiers'], Partial<Record<string, boolean>>> | ElementName,
+		elementModifiers?: IfNullThenUndefined<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers'], Partial<Record<string, boolean>>>,
 	) => {
 		if (!blocks.has(blockName as string)) {
 			blocks.set(blockName as string, easyBem(blockName as string));

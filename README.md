@@ -10,19 +10,25 @@
 
 ## Overview
 
-**Typed BEM** is a TypeScript library for generating BEM-compliant (Block-Element-Modifier) class names with strict type safety. The library ensures that no external type exports are needed, as the API fully infers types based on user input. This makes the library simple to use while maintaining flexibility and strict validation.
+**Typed BEM** is a TypeScript library for generating BEM-compliant (Block-Element-Modifier) class names with strict type safety. It enforces correct usage of blocks, elements, and modifiers using TypeScript generics, ensuring clean and maintainable CSS class names.
+
+Typed BEM supports both individual blocks and entire component libraries, allowing you to centralize and reuse your design system efficiently.
+
+> Vision: Additionally, Typed BEM can generate a SCSS file structure directly from your BEM type definitions, helping you synchronize your TypeScript code with your CSS and HTML.
 
 ## Key Features
 
-- **Type Inference**: Automatically infers types based on the provided BEM structure.
-- **No External Dependencies**: Pure TypeScript implementation with no external dependencies.
-- **Flexible API**: Supports complex BEM structures with nested elements and modifiers.
-- **Self-Contained API**: All types are inferred automatically within the library; there’s no need to import or use external types.
-- **Enhanced Modifier Handling**: If modifiers are declared as `null`, they are optional (`undefined`) when calling the BEM generator.
-- **Type-Safe**: Guarantees consistent and predictable class names at compile time.
-- **Integration with `easy-bem`**: Leverages the robust functionality of `easy-bem`.
+- **Type-Safe**: Guarantees valid class name generation at compile time.
+- **Set-Based Modifiers**: Efficiently handles modifiers using `Set<string>`.
+- **Validation**: Modifiers cannot be empty strings (`""`).
+- **Component Library Support**: Use individual blocks or combine them into a unified BEM generator for your entire design system.
+- **SCSS Generation**: Automatically create a SCSS file structure from your type definitions, bridging the gap between TypeScript and CSS.
+- **Flexible API**: Supports complex BEM structures with nested elements and dynamic modifiers.
+- **No External Dependencies**: Lightweight and built with pure TypeScript.
 
 ## Installation
+
+Install the package using npm or pnpm:
 
 ### Using npm
 
@@ -38,155 +44,196 @@ pnpm add typed-bem
 
 ## Usage
 
-### Defining Blocks and Elements
+Define your BEM structure using TypeScript generics. Modifiers are defined as `Set<string>` for flexibility. Empty modifiers (`""`) are not allowed and will cause TypeScript errors.
 
-The library uses TypeScript generics to define your BEM structure. No external types need to be imported or defined explicitly.
+### Example 1: Button Component
 
 ```typescript
 import typedBem from 'typed-bem';
 
 // Define your BEM structure
-const bem = typedBem<{
+const buttonBem = typedBem<{
 	button: {
-		modifiers: 'primary' | 'secondary';
+		modifiers: Set<'primary' | 'secondary'>;
 		elements: {
 			icon: {
-				modifiers: 'small' | 'large';
+				modifiers: Set<'small' | 'large'>;
 			};
 			text: {
-				modifiers: null; // No modifiers allowed for `text`
+				modifiers: never; // No modifiers allowed for `text`
 			};
 		};
 	};
 }>();
 
 // Block with modifiers
-console.log(bem('button', { primary: true }));
+console.log(buttonBem('button', { primary: true }));
 // Output: "button button--primary"
 
 // Element with modifiers
-console.log(bem('button', 'icon', { small: true }));
+console.log(buttonBem('button', 'icon', { small: true }));
 // Output: "button__icon button__icon--small"
 
-// Element with `null` modifiers
-console.log(bem('button', 'text'));
+// Element with no modifiers
+console.log(buttonBem('button', 'text'));
 // Output: "button__text"
-
-// Invalid: Passing modifiers to `text` (will throw a TypeScript error)
-// bem('button', 'text', { bold: true });
 ```
 
-### Modifier Handling with `null`
+### Example 2: Component Library
 
-The library ensures that if `modifiers` are defined as `null`, they become optional (`undefined`) in the API. This simplifies the function signature while maintaining clarity.
+You can combine multiple BEM blocks into a single generator to streamline your component library's design system.
 
 ```typescript
 const bem = typedBem<{
-	card: {
-		modifiers: 'featured' | 'highlighted';
+	button: {
+		modifiers: Set<'primary' | 'secondary'>;
 		elements: {
-			header: {
-				modifiers: 'compact' | 'spaced';
+			icon: {
+				modifiers: Set<'small' | 'large'>;
 			};
-			footer: {
-				modifiers: null; // No modifiers allowed
+		};
+	};
+	alert: {
+		modifiers: Set<'success' | 'error' | 'warning'>;
+		elements: {
+			container: {
+				modifiers: Set<'padded'>;
 			};
 		};
 	};
 }>();
 
-// Block
-console.log(bem('card', { featured: true }));
-// Output: "card card--featured"
+// Button block
+console.log(bem('button', { primary: true }));
+// Output: "button button--primary"
 
-// Element with modifiers
-console.log(bem('card', 'header', { compact: true }));
-// Output: "card__header card__header--compact"
+// Alert block
+console.log(bem('alert', { success: true }));
+// Output: "alert alert--success"
 
-// Element with `null` modifiers
-console.log(bem('card', 'footer'));
-// Output: "card__footer"
-
-// Invalid: Passing modifiers to footer (will throw a TypeScript error)
-// bem('card', 'footer', { expanded: true });
+// Shared elements and modifiers
+console.log(bem('button', 'icon', { large: true }));
+// Output: "button__icon button__icon--large"
+console.log(bem('alert', 'container', { padded: true }));
+// Output: "alert__container alert__container--padded"
 ```
 
-### How It Works Internally
+### Generating SCSS from Type Definitions
 
-#### Type Inference with `IfNullThenUndefined`
+Typed BEM can generate a SCSS structure from your BEM type definitions, ensuring that your CSS matches your TypeScript structure.
 
-The library uses the `IfNullThenUndefined` utility type internally to adjust function parameters dynamically:
+#### Example SCSS Generator
 
-```typescript
-type IfNullThenUndefined<C, T> = C extends null ? undefined : T;
-
-// Example Usage
-type ModifiersForButton = IfNullThenUndefined<'primary' | 'secondary', Record<string, boolean>>;
-// Result: Record<string, boolean>
-
-type ModifiersForText = IfNullThenUndefined<null, Record<string, boolean>>;
-// Result: undefined
-```
-
-This ensures that `null` modifiers are treated as `undefined` when calling the function.
-
-### Full Example
+Here’s a simple script to convert your type definitions into a SCSS file structure:
 
 ```typescript
-const bem = typedBem<{
-	nav: {
-		modifiers: 'sticky' | 'fixed';
+import fs from 'fs';
+import { default as typedBem } from 'typed-bem';
+
+const bemDefinition = {
+	button: {
+		modifiers: new Set(['primary', 'secondary']),
 		elements: {
-			item: {
-				modifiers: 'active' | 'disabled';
-			};
-			logo: {
-				modifiers: null;
-			};
-		};
-	};
-}>();
+			icon: { modifiers: new Set(['small', 'large']) },
+			text: { modifiers: null },
+		},
+	},
+	alert: {
+		modifiers: new Set(['success', 'error', 'warning']),
+		elements: {
+			container: { modifiers: new Set(['padded']) },
+		},
+	},
+} as const;
 
-// Block with modifiers
-console.log(bem('nav', { sticky: true }));
-// Output: "nav nav--sticky"
+const generateScss = (bemDef: typeof bemDefinition, outputPath: string) => {
+	const scssLines: string[] = [];
 
-// Element with modifiers
-console.log(bem('nav', 'item', { active: true }));
-// Output: "nav__item nav__item--active"
+	Object.entries(bemDef).forEach(([block, blockDef]) => {
+		scssLines.push(`.${block} {`);
+		if (blockDef.modifiers) {
+			blockDef.modifiers.forEach((modifier) => {
+				scssLines.push(`  &--${modifier} {}`);
+			});
+		}
+		if (blockDef.elements) {
+			Object.entries(blockDef.elements).forEach(([element, elementDef]) => {
+				scssLines.push(`  &__${element} {`);
+				if (elementDef.modifiers) {
+					elementDef.modifiers.forEach((modifier) => {
+						scssLines.push(`    &--${modifier} {}`);
+					});
+				}
+				scssLines.push(`  }`);
+			});
+		}
+		scssLines.push(`}`);
+	});
 
-// Element with `null` modifiers
-console.log(bem('nav', 'logo'));
-// Output: "nav__logo"
+	fs.writeFileSync(outputPath, scssLines.join('\n'), 'utf8');
+};
 
-// Invalid: Passing modifiers to logo (will throw a TypeScript error)
-// bem('nav', 'logo', { large: true });
+// Generate SCSS
+generateScss(bemDefinition, './bem-structure.scss');
+```
+
+#### Example Output (`bem-structure.scss`)
+
+```scss
+.button {
+	&--primary {
+	}
+	&--secondary {
+	}
+	&__icon {
+		&--small {
+		}
+		&--large {
+		}
+	}
+	&__text {
+	}
+}
+
+.alert {
+	&--success {
+	}
+	&--error {
+	}
+	&--warning {
+	}
+	&__container {
+		&--padded {
+		}
+	}
+}
 ```
 
 ## API Documentation
 
 ### `typedBem` Function
 
-The `typedBem` function creates a generator for BEM class names with full type safety.
+The `typedBem` function creates a generator for BEM class names with strict type safety.
 
 #### Parameters
 
 1. **`blockName`** (`string`): The name of the block.
 2. **`blockModifiersOrElementName`**:
-   - If the block has modifiers, provide an object representing them.
-   - If calling an element, provide the name of the element.
+   - An object representing block modifiers.
+   - Or the name of an element.
 3. **`elementModifiers`** (optional):
-   - Provide an object representing the element modifiers, if applicable.
+   - An object representing the element modifiers, if applicable.
 
 #### Return Value
 
-A function that generates BEM class names for blocks, elements, and modifiers.
+A function that generates BEM class names for blocks, elements, and their modifiers.
 
 ## Why Use `typed-bem`?
 
-- **Self-Contained API**: No types are exported, making the library simple and intuitive.
-- **Type Safety**: Prevents runtime errors by enforcing strict TypeScript validation.
-- **Flexible and Powerful**: Handles complex BEM structures seamlessly.
+- **Strict Validation**: Prevents invalid or empty modifiers like `""`.
+- **Component Library Support**: Manage multiple blocks and elements in a unified structure.
+- **SCSS Generation**: Synchronize TypeScript definitions with SCSS to ensure consistency.
+- **Set-Based Modifier Handling**: Efficiently processes modifiers with `Set<string>`.
 
 ## License
 
@@ -195,5 +242,3 @@ This project is licensed under the [MIT License](./LICENSE).
 ## Contact
 
 Have questions? Found an issue? Open an issue on GitHub or contact us at [github@martinoppitz.com](mailto:github@martinoppitz.com).
-
-This README reflects the internal use of types, ensuring clarity for users while maintaining a self-contained, easy-to-use API.

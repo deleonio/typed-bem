@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"target": "ES2020", // Setzt das Ziel auf modernes JavaScript
+		"module": "ESNext", // Node.js verwendet ESNext-Module
+		"lib": ["ES2020"], // Bibliotheken, die zur Verfügung stehen (z. B. ES2020)
+		"declaration": true, // Erstellt .d.ts-Dateien für Typdefinitionen
+		"outDir": "./dist", // Ausgabeordner für kompilierte Dateien
+		"rootDir": "./src", // Wurzelverzeichnis der Eingabedateien
+		"strict": true, // Aktiviert alle strikten Typprüfungen
+		"esModuleInterop": true, // Ermöglicht den Import von CommonJS-Modulen mit `default`-Exports
+		"resolveJsonModule": true, // Ermöglicht den Import von JSON-Dateien
+		"skipLibCheck": true, // Überspringt die Überprüfung von .d.ts-Dateien
+		"moduleResolution": "node", // Verwende Node.js-Modulauflösung
+		"allowSyntheticDefaultImports": true, // Erlaubt Standardimporte für nicht-ES-Module
+		"forceConsistentCasingInFileNames": true, // Erzwingt konsistente Groß- und Kleinschreibung bei Dateinamen
+		"isolatedModules": true, // Ermöglicht die Überprüfung auf Modul-Isolation
+		"noImplicitAny": true, // Warnungen für implizite `any`-Typen
+		"noUnusedLocals": true, // Warnungen für ungenutzte lokale Variablen
+		"noUnusedParameters": true, // Warnungen für ungenutzte Parameter
+		"noImplicitReturns": true, // Warnungen für fehlende Rückgaben in Funktionen
+		"noFallthroughCasesInSwitch": true // Verhindert unbeabsichtigte Durchläufe in `switch`
+	},
+	"include": ["src"], // Eingabedateien für den Compiler
+	"exclude": ["node_modules", "dist"] // Ausschluss von Ordnern und Dateien
+}
