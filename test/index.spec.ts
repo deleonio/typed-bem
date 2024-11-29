@@ -15,15 +15,18 @@ type MyBlocks = {
 		};
 	};
 	header: {
-		modifiers: 'sticky' | 'fixed';
+		modifiers: null;
 		elements: {
 			title: {
 				modifiers: 'large' | 'small';
 			};
-			nav: {};
+			nav: {
+				modifiers: null;
+			};
 		};
 	};
 	footer: {
+		modifiers: null;
 		elements: {
 			link: {
 				modifiers: 'visited' | 'unvisited';
@@ -94,8 +97,8 @@ describe('typedBem', () => {
 	});
 
 	it('should generate header block class name with modifier', () => {
-		const result = bem('header', { sticky: true });
-		expect(result).to.equal('header header--sticky');
+		const result = bem('header');
+		expect(result).to.equal('header');
 	});
 
 	it('should generate header element class name with modifier', () => {
@@ -124,18 +127,20 @@ describe('typedBem', () => {
 	});
 
 	it('should handle multiple true modifiers for header', () => {
-		const result = bem('header', { sticky: true, fixed: true });
-		expect(result).to.equal('header header--sticky header--fixed');
+		const result = bem('header', 'nav');
+		expect(result).to.equal('header__nav');
 	});
 
 	it('should handle multiple false modifiers for header', () => {
-		const result = bem('header', { sticky: false, fixed: false });
-		expect(result).to.equal('header');
+		const result = bem('header', 'title');
+		expect(result).to.equal('header__title');
 	});
 
 	it('should handle mixed true and false modifiers for header', () => {
-		const result = bem('header', { sticky: true, fixed: false });
-		expect(result).to.equal('header header--sticky');
+		const result = bem('header', 'title', {
+			large: true,
+		});
+		expect(result).to.equal('header__title header__title--large');
 	});
 
 	it('should handle element with multiple true modifiers for footer', () => {
@@ -151,10 +156,5 @@ describe('typedBem', () => {
 	it('should handle element with mixed true and false modifiers for footer', () => {
 		const result = bem('footer', 'info', { detailed: true, summary: false });
 		expect(result).to.equal('footer__info footer__info--detailed');
-		expect(
-			bem('header', 'nav', {
-				egal: true,
-			}),
-		).to.equal('header__nav header__nav--egal');
 	});
 });

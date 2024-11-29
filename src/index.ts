@@ -1,14 +1,20 @@
 import { default as easyBem } from 'easy-bem';
 
-export type BemModifiers = {
-	modifiers?: string;
+type NonEmptyString<T extends string> = T extends '' ? null : T;
+
+type IfNullThenUndefined<C, T> = C extends null ? undefined : T;
+
+// type IfNullThenUndefined<C, T, E> = C extends null ? T : E;
+
+type BemModifiers = {
+	modifiers: string | NonEmptyString<''>;
 };
 
-export type BemElements = {
+type BemElements = {
 	[elementName: string]: BemModifiers;
 };
 
-export type BemBlocks = {
+type BemBlocks = {
 	[blockName: string]: BemModifiers & {
 		elements?: BemElements;
 	};
@@ -47,12 +53,18 @@ export type BemBlocks = {
  *
  * @returns The generated BEM class name.
  */
+
 const typedBem = <B extends BemBlocks>() => {
 	const blocks = new Map<string, ReturnType<typeof easyBem>>();
 	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
 		blockName: BlockName,
-		blockModifiersOrElementName?: Partial<Record<NonNullable<B[BlockName]['modifiers']>, boolean>> | ElementName,
-		elementModifiers?: Partial<Record<NonNullable<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers']>, boolean>>,
+		blockModifiersOrElementName?:
+			| IfNullThenUndefined<B[BlockName]['modifiers'], Partial<Record<NonNullable<B[BlockName]['modifiers']>, boolean>>>
+			| ElementName,
+		elementModifiers?: IfNullThenUndefined<
+			NonNullable<B[BlockName]['elements']>[ElementName]['modifiers'],
+			Partial<Record<NonNullable<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers']>, boolean>>
+		>,
 	) => {
 		if (!blocks.has(blockName as string)) {
 			blocks.set(blockName as string, easyBem(blockName as string));
