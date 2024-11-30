@@ -20,7 +20,6 @@ This library not only ensures correctness at compile time but also allows you to
 - **Type Safety**: Guarantees correct usage of blocks, elements, and modifiers at compile time.
 - **SCSS-Driven Approach**: Use TypeScript definitions to programmatically generate SCSS files, ensuring consistent styles.
 - **Flexible and Scalable**: Supports nested elements, complex modifiers, and unified design systems.
-- **Eager or Lazy Initialization**: Pre-instantiate BEM instances for specified blocks or create them lazily during use.
 - **Set-Based Modifiers**: Efficiently handles and validates modifiers using `Set<string>`.
 - **Lightweight**: Minimal overhead with no additional dependencies beyond `easy-bem`.
 
@@ -61,9 +60,7 @@ const bem = typedBem<{
 			};
 		};
 	};
-}>({
-	blockNames: ['button'], // Pre-instantiate "button" as a BEM instance
-});
+}>();
 
 // Block with modifiers
 console.log(bem('button', { primary: true }));
@@ -85,19 +82,8 @@ console.log(bem('button', 'text'));
 #### Function Signature
 
 ```typescript
-typedBem<B extends BemBlocks>(options?: BemOptions<B>): TypedBemFunction<B>;
+typedBem<B extends BemBlocks>(): TypedBemFunction<B>;
 ```
-
-#### Parameters
-
-1. **`options`** _(optional)_:
-
-   - **`blockNames`** _(optional)_: An array of block names (`keyof B`) that will be pre-instantiated as BEM instances.
-     - When provided, BEM instances are created immediately for all specified block names.
-     - If omitted, blocks are lazily instantiated the first time they're accessed.
-
-2. **`B`** _(generic)_:
-   - Represents the structure of your BEM blocks, including their elements and modifiers.
 
 #### Returns
 
@@ -108,40 +94,6 @@ The function returns a **BEM generator function** that accepts:
   - A record of block modifiers.
   - Or the name of an element (`keyof B[BlockName]['elements']`).
 - **`elementModifiers`** _(optional)_: A record of element modifiers, if applicable.
-
-### Behavior
-
-1. **Eager Initialization with `blockNames`**:
-
-   - Ensures all blocks in `blockNames` are initialized immediately during `typedBem` creation.
-   - Improves runtime performance by avoiding lazy instantiation.
-
-   Example:
-
-   ```typescript
-   const bem = typedBem<{
-   	button: { modifiers: Set<'primary'> };
-   	alert: { modifiers: Set<'success'> };
-   }>({
-   	blockNames: ['button', 'alert'],
-   });
-
-   console.log(bem('button', { primary: true })); // "button button--primary"
-   ```
-
-2. **Lazy Initialization (Default)**:
-
-   - Blocks are instantiated only when accessed for the first time, minimizing upfront overhead.
-
-   Example:
-
-   ```typescript
-   const bem = typedBem<{
-   	button: { modifiers: Set<'primary'> };
-   }>();
-
-   console.log(bem('button', { primary: true })); // "button button--primary"
-   ```
 
 ## SCSS Integration
 
@@ -234,7 +186,7 @@ generateScss(bemDefinition, './bem-structure.scss');
 - **Built on Easy-BEM**: Combines the simplicity of `easy-bem` with strict TypeScript typing.
 - **SCSS Synchronization**: Generate SCSS files from your TypeScript definitions for consistency.
 - **Type Safety**: Catch invalid combinations of blocks, elements, and modifiers at compile time.
-- **Performance Options**: Choose between eager or lazy block initialization to optimize runtime behavior.
+- **Scalable Design Systems**: Perfect for large projects with multiple components.
 
 ## License
 

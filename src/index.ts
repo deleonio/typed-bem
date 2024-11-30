@@ -34,23 +34,6 @@ type BemBlocks = {
 };
 
 /**
- * A list of block names to generate BEM class names for.
- */
-type BlockList<B extends BemBlocks> = (keyof B)[] & {
-	length: keyof B extends infer K ? K[]['length'] : never;
-};
-
-/**
- * Options for the `typedBem` function.
- */
-type BemOptions<B extends BemBlocks> = {
-	/**
-	 * A list of block names to generate BEM class names for.
-	 */
-	blockNames?: BlockList<B>;
-};
-
-/**
  * A utility function to generate BEM (Block Element Modifier) class names with TypeScript type safety.
  *
  * @template B - A type representing the structure of the BEM blocks, elements, and modifiers.
@@ -84,16 +67,8 @@ type BemOptions<B extends BemBlocks> = {
  * // Invalid: Passing modifiers to element2 (will throw a TypeScript error)
  * bem('block', 'element2', { modifierA: true }); // "block__element block__element--modifierA"
  */
-const typedBem = <B extends BemBlocks>(options?: BemOptions<B>) => {
+const typedBem = <B extends BemBlocks>() => {
 	const bemBlocks = new Map<string, ReturnType<typeof easyBem>>();
-	if (options?.blockNames) {
-		for (const blockName of options.blockNames) {
-			/**
-			 * We do not proof if block names are redundant.
-			 */
-			bemBlocks.set(blockName as string, easyBem(blockName as string));
-		}
-	}
 	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
 		blockName: BlockName,
 		blockModifiersOrElementName?: IfNullThenUndefined<B[BlockName]['modifiers'], Partial<Record<string, boolean>>> | ElementName,

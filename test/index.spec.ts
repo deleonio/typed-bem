@@ -4,9 +4,7 @@ import typedBem from '../src/index';
 import type { MyBlocks } from './bem-schema';
 
 describe('typedBem', () => {
-	const bem = typedBem<MyBlocks>({
-		blockNames: ['collapsable', 'header', 'footer'],
-	});
+	const bem = typedBem<MyBlocks>();
 
 	it('should generate block class name with modifier', () => {
 		const result = bem('collapsable', { accordion: true });
