@@ -1,21 +1,53 @@
 import { default as easyBem } from 'easy-bem';
 
+/**
+ * A utility type to conditionally set a type to `null` if it is an empty string.
+ */
 type NonEmptyString<T extends string> = T extends '' ? null : T;
 
+/**
+ * A utility type to conditionally set a type to `undefined` if it is `null`.
+ */
 type IfNullThenUndefined<C, T> = C extends null ? undefined : T;
 
+/**
+ * A type representing the structure of the BEM modifiers.
+ */
 type BemModifiers = {
 	modifiers: Set<string | NonEmptyString<''>> | never;
 };
 
+/**
+ * A type representing the structure of the BEM elements and modifiers.
+ */
 type BemElements = {
-	[elementName: string]: BemModifiers;
+	[elementName: string /* | NonEmptyString<''> (?) */]: BemModifiers;
 };
 
+/**
+ * A type representing the structure of the BEM blocks, elements, and modifiers.
+ */
 type BemBlocks = {
-	[blockName: string]: BemModifiers & {
+	[blockName: string /* | NonEmptyString<''> (?) */]: BemModifiers & {
 		elements?: BemElements;
 	};
+};
+
+/**
+ * A list of block names to generate BEM class names for.
+ */
+type BlockList<B extends BemBlocks> = (keyof B)[] & {
+	length: keyof B extends infer K ? K[]['length'] : never;
+};
+
+/**
+ * Options for the `typedBem` function.
+ */
+type BemOptions<B extends BemBlocks> = {
+	/**
+	 * A list of block names to generate BEM class names for.
+	 */
+	blockNames?: BlockList<B>;
 };
 
 /**
@@ -39,7 +71,9 @@ type BemBlocks = {
  *       };
  *     };
  *   };
- * }>();
+ * }>({
+ *   blockNames: ['block'],
+ * });
  *
  * // Generate block class name
  * bem('block', { modifier1: true }); // "block block--modifier1"
@@ -50,17 +84,47 @@ type BemBlocks = {
  * // Invalid: Passing modifiers to element2 (will throw a TypeScript error)
  * bem('block', 'element2', { modifierA: true }); // "block__element block__element--modifierA"
  */
-const typedBem = <B extends BemBlocks>() => {
-	const blocks = new Map<string, ReturnType<typeof easyBem>>();
+const typedBem = <B extends BemBlocks>(options?: BemOptions<B>) => {
+	const bemBlocks = new Map<string, ReturnType<typeof easyBem>>();
+	if (options?.blockNames) {
+		for (const blockName of options.blockNames) {
+			/**
+			 * We do not proof if block names are redundant.
+			 */
+			bemBlocks.set(blockName as string, easyBem(blockName as string));
+		}
+	}
 	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
 		blockName: BlockName,
 		blockModifiersOrElementName?: IfNullThenUndefined<B[BlockName]['modifiers'], Partial<Record<string, boolean>>> | ElementName,
 		elementModifiers?: IfNullThenUndefined<NonNullable<B[BlockName]['elements']>[ElementName]['modifiers'], Partial<Record<string, boolean>>>,
 	) => {
-		if (!blocks.has(blockName as string)) {
-			blocks.set(blockName as string, easyBem(blockName as string));
+		/**
+		 * Executes a block of code and handles errors efficiently.
+		 * Use `try-catch` when the likelihood of an exception is low,
+		 * as it avoids the constant overhead of condition checks compared to `if-else`.
+		 *
+		 * @example
+		 * // Example with try-catch
+		 * try {
+		 *   performOperation();
+		 * } catch (error) {
+		 *   console.error("An error occurred:", error);
+		 * }
+		 *
+		 * @remarks
+		 * - Use `if-else` for simple conditions that are frequently checked.
+		 * - `try-catch` is ideal when exceptions are rare and performance
+		 *   gains come from skipping condition evaluations.
+		 */
+		try {
+			return bemBlocks.get(blockName as string)!(blockModifiersOrElementName as string, elementModifiers);
+		} catch (e) {
+			return bemBlocks.set(blockName as string, easyBem(blockName as string)).get(blockName as string)!(
+				blockModifiersOrElementName as string,
+				elementModifiers,
+			);
 		}
-		return blocks.get(blockName as string)!(blockModifiersOrElementName as string, elementModifiers);
 	};
 };
 

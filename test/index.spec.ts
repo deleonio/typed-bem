@@ -1,45 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
 import typedBem from '../src/index';
-
-type MyBlocks = {
-	collapsable: {
-		modifiers: 'accordion' | 'details';
-		elements: {
-			button: {
-				modifiers: 'active' | 'disabled';
-			};
-			content: {
-				modifiers: 'block' | 'inline';
-			};
-		};
-	};
-	header: {
-		modifiers: null;
-		elements: {
-			title: {
-				modifiers: 'large' | 'small';
-			};
-			nav: {
-				modifiers: null;
-			};
-		};
-	};
-	footer: {
-		modifiers: null;
-		elements: {
-			link: {
-				modifiers: 'visited' | 'unvisited';
-			};
-			info: {
-				modifiers: 'detailed' | 'summary';
-			};
-		};
-	};
-};
+import type { MyBlocks } from './bem-schema';
 
 describe('typedBem', () => {
-	const bem = typedBem<MyBlocks>();
+	const bem = typedBem<MyBlocks>({
+		blockNames: ['collapsable', 'header', 'footer'],
+	});
 
 	it('should generate block class name with modifier', () => {
 		const result = bem('collapsable', { accordion: true });
