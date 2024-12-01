@@ -1,20 +1,5 @@
 import * as fs from 'fs';
-
-type NonEmptyString<T extends string> = T extends '' ? null : T;
-
-type BemModifiers = {
-	modifiers: Set<string | NonEmptyString<''>> | null;
-};
-
-type BemElements = {
-	[elementName: string]: BemModifiers;
-};
-
-type BemBlocks = {
-	[blockName: string]: BemModifiers & {
-		elements?: BemElements;
-	};
-};
+import { BemBlocks } from './types';
 
 // Example usage
 type AlertBem = {

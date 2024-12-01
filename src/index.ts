@@ -1,37 +1,5 @@
 import { default as easyBem } from 'easy-bem';
-
-/**
- * A utility type to conditionally set a type to `null` if it is an empty string.
- */
-type NonEmptyString<T extends string> = T extends '' ? null : T;
-
-/**
- * A utility type to conditionally set a type to `undefined` if it is `null`.
- */
-type IfNullThenUndefined<C, T> = C extends null ? undefined : T;
-
-/**
- * A type representing the structure of the BEM modifiers.
- */
-type BemModifiers = {
-	modifiers: Set<string | NonEmptyString<''>> | never;
-};
-
-/**
- * A type representing the structure of the BEM elements and modifiers.
- */
-type BemElements = {
-	[elementName: string /* | NonEmptyString<''> (?) */]: BemModifiers;
-};
-
-/**
- * A type representing the structure of the BEM blocks, elements, and modifiers.
- */
-type BemBlocks = {
-	[blockName: string /* | NonEmptyString<''> (?) */]: BemModifiers & {
-		elements?: BemElements;
-	};
-};
+import { BemBlocks, IfNullThenUndefined } from './types';
 
 /**
  * A utility function to generate BEM (Block Element Modifier) class names with TypeScript type safety.
