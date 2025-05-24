@@ -35,7 +35,7 @@ import { BemBlocks, IfNullThenUndefined } from './types';
  * // Invalid: Passing modifiers to element2 (will throw a TypeScript error)
  * bem('block', 'element2', { modifierA: true }); // "block__element block__element--modifierA"
  */
-export const typedBem = <B extends BemBlocks>() => {
+function typedBem<B extends BemBlocks>() {
 	const bemBlocks = new Map<string, ReturnType<typeof easyBem>>();
 	return <BlockName extends keyof B, ElementName extends keyof NonNullable<B[BlockName]['elements']>>(
 		blockName: BlockName,
@@ -69,6 +69,7 @@ export const typedBem = <B extends BemBlocks>() => {
 			);
 		}
 	};
-};
+}
 
 export default typedBem;
+export { typedBem };
