@@ -1,18 +1,11 @@
 {
 	"name": "typed-bem",
-	"version": "1.0.0-beta.8",
+	"version": "1.0.0-rc.3",
 	"author": {
 		"name": "Martin Oppitz",
 		"email": "github@martinoppitz.com",
 		"url": "https://martinoppitz.com"
 	},
-	"contributors": [
-		{
-			"name": "Martin Oppitz",
-			"email": "github@martinoppitz.com",
-			"url": "https://martinoppitz.com"
-		}
-	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/deleonio/typed-bem-class-generator.git"
@@ -31,40 +24,51 @@
 	],
 	"description": "A TypeScript library for generating BEM class names.",
 	"license": "MIT",
+	"sideEffects": false,
 	"dependencies": {
 		"easy-bem": "1.1.1"
 	},
 	"devDependencies": {
-		"@types/chai": "5.0.1",
-		"@types/node": "22.10.1",
-		"chai": "5.1.2",
-		"eslint": "9.15.0",
-		"nodemon": "3.1.7",
-		"npm-check-updates": "17.1.11",
-		"prettier": "3.4.1",
+		"@types/chai": "5.2.2",
+		"@types/node": "22.15.21",
+		"chai": "5.2.0",
+		"eslint": "9.27.0",
+		"nodemon": "3.1.10",
+		"npm-check-updates": "18.0.1",
+		"knip": "5.57.2",
+		"prettier": "3.5.3",
 		"ts-node": "10.9.2",
-		"typescript": "5.7.2",
-		"unbuild": "2.0.0",
-		"vitest": "2.1.6"
+		"typescript": "5.8.3",
+		"unbuild": "3.5.0",
+		"vitest": "3.1.4"
 	},
 	"scripts": {
-		"dev": "nodemon src/index.ts",
-		"lint": "tsc --noEmit && eslint src",
-		"test": "vitest",
-		"update": "ncu -u",
 		"build": "unbuild",
-		"prepack": "unbuild"
+		"dev": "nodemon src/index.ts",
+		"format": "prettier {src,test}/**/*",
+		"lint": "tsc --noEmit && eslint {src,test}/**/*",
+		"prepare": "unbuild",
+		"test": "vitest",
+		"unused": "knip",
+		"update": "ncu -t minor -u"
 	},
 	"type": "module",
 	"exports": {
 		".": {
 			"import": "./dist/index.mjs",
-			"require": "./dist/index.cjs"
+			"require": "./dist/index.cjs",
+			"types": "./dist/index.d.ts"
 		}
 	},
 	"main": "./dist/index.cjs",
 	"types": "./dist/index.d.ts",
+	"module": "./dist/index.mjs",
 	"files": [
 		"dist"
-	]
+	],
+	"engines": {
+		"node": "^22",
+		"npm": "^10",
+		"pnpm": "^10"
+	}
 }

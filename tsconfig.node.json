@@ -20,6 +20,6 @@
 		"noImplicitReturns": true, // Warnungen für fehlende Rückgaben in Funktionen
 		"noFallthroughCasesInSwitch": true // Verhindert unbeabsichtigte Durchläufe in `switch`
 	},
-	"include": ["src"], // Eingabedateien für den Compiler
+	"include": ["src", "test"], // Eingabedateien für den Compiler
 	"exclude": ["node_modules", "dist"] // Ausschluss von Ordnern und Dateien
 }
