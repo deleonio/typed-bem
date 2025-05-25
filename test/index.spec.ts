@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
-import typedBem from '../src/index';
+import { generateBemClassNames } from '../src';
 import type { MyBlocks } from './bem-schema';
 
 describe('typedBem', () => {
-	const bem = typedBem<MyBlocks>();
+	const bem = generateBemClassNames<MyBlocks>();
 
 	it('should generate block class name with modifier', () => {
 		const result = bem('collapsable', { accordion: true });

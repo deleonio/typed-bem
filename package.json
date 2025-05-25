@@ -1,6 +1,6 @@
 {
 	"name": "typed-bem",
-	"version": "1.0.0-rc.4",
+	"version": "1.0.0-rc.5",
 	"author": {
 		"name": "Martin Oppitz",
 		"email": "github@martinoppitz.com",
@@ -35,7 +35,7 @@
 		"eslint": "9.27.0",
 		"nodemon": "3.1.10",
 		"npm-check-updates": "18.0.1",
-		"knip": "5.57.2",
+		"knip": "5.58.0",
 		"prettier": "3.5.3",
 		"ts-node": "10.9.2",
 		"typescript": "5.8.3",
@@ -50,7 +50,7 @@
 		"prepare": "unbuild",
 		"test": "vitest",
 		"unused": "knip",
-		"update": "ncu -t minor -u"
+		"update": "ncu -t minor -u && ncu"
 	},
 	"type": "module",
 	"exports": {

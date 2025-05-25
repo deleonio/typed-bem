@@ -46,9 +46,9 @@ Typed BEM introduces a type-safe way to define and generate BEM class names. Def
 ### Example: Single Component
 
 ```typescript
-import typedBem from 'typed-bem';
+import generateBemClassNames from 'typed-bem';
 
-const bem = typedBem<{
+const bem = generateBemClassNames<{
 	button: {
 		modifiers: Set<'primary' | 'secondary'>;
 		elements: {
@@ -77,12 +77,12 @@ console.log(bem('button', 'text'));
 
 ## API Documentation
 
-### `typedBem`
+### `generateBemClassNames`
 
 #### Function Signature
 
 ```typescript
-typedBem<B extends BemBlocks>(): TypedBemFunction<B>;
+generateBemClassNames<B extends BemBlocks>(): TypedBemFunction<B>;
 ```
 
 #### Returns
@@ -102,8 +102,6 @@ Typed BEM allows you to synchronize your TypeScript definitions with your SCSS s
 ### SCSS Generator Script
 
 ```typescript
-import fs from 'fs';
-
 const bemDefinition = {
 	button: {
 		modifiers: new Set(['primary', 'secondary']),
@@ -120,35 +118,8 @@ const bemDefinition = {
 	},
 } as const;
 
-const generateScss = (bemDef: typeof bemDefinition, outputPath: string) => {
-	const scssLines: string[] = [];
-
-	Object.entries(bemDef).forEach(([block, blockDef]) => {
-		scssLines.push(`.${block} {`);
-		if (blockDef.modifiers) {
-			blockDef.modifiers.forEach((modifier) => {
-				scssLines.push(`  &--${modifier} {}`);
-			});
-		}
-		if (blockDef.elements) {
-			Object.entries(blockDef.elements).forEach(([element, elementDef]) => {
-				scssLines.push(`  &__${element} {`);
-				if (elementDef.modifiers) {
-					elementDef.modifiers.forEach((modifier) => {
-						scssLines.push(`    &--${modifier} {}`);
-					});
-				}
-				scssLines.push(`  }`);
-			});
-		}
-		scssLines.push(`}`);
-	});
-
-	fs.writeFileSync(outputPath, scssLines.join('\n'), 'utf8');
-};
-
 // Generate SCSS file
-generateScss(bemDefinition, './bem-structure.scss');
+generateBemScssFile(bemDefinition, './bem-structure');
 ```
 
 ### Example Output (`bem-structure.scss`)

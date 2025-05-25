@@ -1,48 +1,7 @@
-import * as fs from 'fs';
-import { BemBlocks } from './types';
+import { writeFileSync } from 'fs';
+import { BemBlocks, BemSchema } from '../types';
 
-// Example usage
-type AlertBem = {
-	alert: {
-		elements: {
-			container: {
-				modifiers: null;
-			};
-			'container-content': {
-				modifiers: null;
-			};
-			'container-heading': {
-				modifiers: null;
-			};
-			'close-button': {
-				modifiers: Set<'close'>;
-			};
-			content: {
-				modifiers: null;
-			};
-			heading: {
-				modifiers: null;
-			};
-		};
-		modifiers: Set<'msg' | 'card' | 'hasCloser' | 'default' | 'error' | 'info' | 'warning' | 'success' | 'variant'>;
-	};
-};
-
-const alertBem: AlertBem = {
-	alert: {
-		modifiers: new Set(['msg', 'card', 'hasCloser', 'default', 'error', 'info', 'warning', 'success', 'variant']),
-		elements: {
-			container: { modifiers: null },
-			'container-content': { modifiers: null },
-			'container-heading': { modifiers: null },
-			'close-button': { modifiers: new Set(['close']) },
-			content: { modifiers: null },
-			heading: { modifiers: null },
-		},
-	},
-};
-
-const generateBemScss = <B extends BemBlocks>(bemDefinition: B, outputPath: string) => {
+function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, outputPath: string) {
 	const scssLines: string[] = [];
 
 	Object.entries(bemDefinition).forEach(([blockName, blockDefinition]) => {
@@ -82,8 +41,7 @@ const generateBemScss = <B extends BemBlocks>(bemDefinition: B, outputPath: stri
 	});
 
 	// Write the SCSS structure to the output file
-	fs.writeFileSync(outputPath, scssLines.join('\n'), 'utf8');
-};
+	writeFileSync(`${outputPath}.scss`, scssLines.join('\n'), 'utf8');
+}
 
-// Generate SCSS
-generateBemScss(alertBem, './alert.scss');
+export { generateBemScssFile };
