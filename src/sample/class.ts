@@ -1,4 +1,4 @@
-import { generateBemClassNames } from '../generators/class';
+import { generateBemClassNames } from '../class';
 import { AlertBem } from './type';
 
 // Generate Class Names

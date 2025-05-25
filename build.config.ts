@@ -3,7 +3,7 @@ import { defineBuildConfig } from 'unbuild';
 export default defineBuildConfig({
 	clean: true,
 	declaration: true,
-	entries: ['./src/index.ts'],
+	entries: ['./src/class.ts', './src/scss.ts'],
 	failOnWarn: true,
 	rollup: {
 		emitCJS: true,
