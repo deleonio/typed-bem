@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import { BemBlocks, BemSchema } from './types';
+import { BemBlocks, BemSchema } from '../types';
 
 function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, outputPath: string) {
 	const scssLines: string[] = [];

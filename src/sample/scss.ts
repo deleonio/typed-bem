@@ -1,4 +1,4 @@
-import { generateBemScssFile } from '../scss';
+import { generateBemScssFile } from '../node/scss';
 import { alertBem } from './const';
 
 // Generate SCSS file

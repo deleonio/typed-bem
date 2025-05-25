@@ -1,5 +1,5 @@
 import { default as easyBem } from 'easy-bem';
-import { BemBlocks, BemSchema } from './types';
+import { BemBlocks, BemSchema } from '../types';
 
 type KeysOfSet<T> = T extends Set<infer U> ? U : never;
 

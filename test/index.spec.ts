@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
-import { generateBemClassNames } from '../src/class';
+import { generateBemClassNames } from '../src/browser';
 import type { MyBlocks } from './bem-schema';
 
 describe('typedBem', () => {

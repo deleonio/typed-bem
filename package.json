@@ -1,6 +1,6 @@
 {
 	"name": "typed-bem",
-	"version": "1.0.0-rc.6",
+	"version": "1.0.0-rc.7",
 	"author": {
 		"name": "Martin Oppitz",
 		"email": "github@martinoppitz.com",
@@ -52,33 +52,33 @@
 		"update": "ncu -t minor -u && ncu"
 	},
 	"type": "module",
-	"main": "./dist/class.cjs",
-	"module": "./dist/class.mjs",
-	"types": "./dist/class.d.ts",
+	"main": "./dist/browser.cjs",
+	"module": "./dist/browser.mjs",
+	"types": "./dist/browser.d.ts",
 	"exports": {
 		".": {
-			"browser": "./dist/class.mjs",
-			"import": "./dist/class.mjs",
-			"require": "./dist/class.cjs"
+			"browser": "./dist/browser.mjs",
+			"import": "./dist/browser.mjs",
+			"require": "./dist/browser.cjs"
 		},
 		"./class": {
-			"browser": "./dist/class.mjs",
-			"import": "./dist/class.mjs",
-			"require": "./dist/class.cjs",
-			"types": "./dist/class.d.ts"
+			"browser": "./dist/browser.mjs",
+			"import": "./dist/browser.mjs",
+			"require": "./dist/browser.cjs",
+			"types": "./dist/browser.d.ts"
 		},
 		"./scss": {
 			"node": {
-				"import": "./dist/scss.mjs",
-				"require": "./dist/scss.cjs"
+				"import": "./dist/node.mjs",
+				"require": "./dist/node.cjs"
 			},
-			"types": "./dist/scss.d.ts"
+			"types": "./dist/node.d.ts"
 		},
 		"./package.json": "./package.json"
 	},
 	"browser": {
-		"./dist/scss.cjs": false,
-		"./dist/scss.mjs": false
+		"./dist/node.cjs": false,
+		"./dist/node.mjs": false
 	},
 	"files": [
 		"dist"
