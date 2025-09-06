@@ -80,12 +80,7 @@
 		"./dist/node.cjs": false,
 		"./dist/node.mjs": false
 	},
-	"files": [
-		"dist"
-	],
-	"engines": {
-		"node": "^22",
-		"npm": "^10",
-		"pnpm": "^10"
-	}
+  "files": [
+    "dist"
+  ]
 }
