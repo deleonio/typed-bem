@@ -10,155 +10,175 @@
 
 ## Overview
 
-**Typed BEM** is an extension of the lightweight and proven [easy-bem](https://www.npmjs.com/package/easy-bem) library. While `easy-bem` efficiently generates BEM (Block-Element-Modifier) class names, `Typed BEM` enhances it with TypeScript typings to create a type-safe and scalable approach for managing your CSS.
+**Typed BEM** extends the battle-tested [easy-bem](https://www.npmjs.com/package/easy-bem) utility with first-class TypeScript
+support. You describe the valid blocks, elements, and modifiers once, and Typed BEM turns that definition into:
 
-This library not only ensures correctness at compile time but also allows you to use your TypeScript definitions to drive your SCSS architecture, making it a robust solution for creating and maintaining large-scale BEM-based design systems.
+- type-safe class name factories,
+- helper utilities for composing class lists, and
+- an optional SCSS file generator that mirrors your schema.
+
+By centralizing your BEM schema in TypeScript you remove guesswork, prevent typos, and keep styles synchronized across your
+project.
 
 ## Key Features
 
-- **Built on Easy-BEM**: Combines the simplicity of `easy-bem` with the power of TypeScript.
-- **Type Safety**: Guarantees correct usage of blocks, elements, and modifiers at compile time.
-- **SCSS-Driven Approach**: Use TypeScript definitions to programmatically generate SCSS files, ensuring consistent styles.
-- **Flexible and Scalable**: Supports nested elements, complex modifiers, and unified design systems.
-- **Set-Based Modifiers**: Efficiently handles and validates modifiers using `Set<string>`.
-- **Lightweight**: Minimal overhead with no additional dependencies beyond `easy-bem`.
+- **Type-Safe API** – Catch invalid blocks, elements, or modifiers during development instead of at runtime.
+- **Set-Based Modifiers** – Model allowed modifiers with `Set<string>` for fast lookups and precise literal unions.
+- **SCSS Generator** – Produce starter SCSS files that follow the same structure as your TypeScript schema.
+- **Tree-Shakeable Helpers** – `generateBemClassNames`, `uniqueClassNames`, and `generateBemScssFile` are exported individually.
+- **Lightweight Footprint** – Built directly on top of `easy-bem` with no extra runtime dependencies.
 
 ## Installation
 
-Install using npm or pnpm:
-
-### Using npm
+Install the package with your preferred package manager:
 
 ```bash
 npm install typed-bem
-```
-
-### Using pnpm
-
-```bash
+# or
 pnpm add typed-bem
+yarn add typed-bem
 ```
 
-## Usage
+## Quick Start
 
-Typed BEM introduces a type-safe way to define and generate BEM class names. Define your BEM structures using TypeScript generics, ensuring correctness and preventing invalid combinations.
+### 1. Describe your schema
 
-### Example: Single Component
+Define a TypeScript type that captures the blocks, their elements, and the allowed modifiers. Use `Set` when modifiers are
+allowed and `null` when they are not.
 
 ```typescript
-import generateBemClassNames from 'typed-bem';
+import { generateBemClassNames } from 'typed-bem';
 
-const bem = generateBemClassNames<{
-	button: {
-		modifiers: Set<'primary' | 'secondary'>;
-		elements: {
-			icon: {
-				modifiers: Set<'small' | 'large'>;
-			};
-			text: {
-				modifiers: never; // No modifiers allowed for `text`
-			};
-		};
-	};
-}>();
-
-// Block with modifiers
-console.log(bem('button', { primary: true }));
-// Output: "button button--primary"
-
-// Element with modifiers
-console.log(bem('button', 'icon', { small: true }));
-// Output: "button__icon button__icon--small"
-
-// Element without modifiers
-console.log(bem('button', 'text'));
-// Output: "button__text"
+type ButtonBem = {
+  button: {
+    modifiers: Set<'primary' | 'secondary'> | null;
+    elements: {
+      icon: {
+        modifiers: Set<'small' | 'large'> | null;
+      };
+      text: {
+        modifiers: null;
+      };
+    };
+  };
+};
 ```
 
-## API Documentation
+### 2. Generate class names
 
-### `generateBemClassNames`
-
-#### Function Signature
+`generateBemClassNames` reads your schema and returns a strongly typed helper. Invalid combinations immediately trigger
+TypeScript errors.
 
 ```typescript
-generateBemClassNames<B extends BemBlocks>(): TypedBemFunction<B>;
+const bem = generateBemClassNames<ButtonBem>();
+
+bem('button');
+// "button"
+
+bem('button', { primary: true });
+// "button button--primary"
+
+bem('button', 'icon', { small: true });
+// "button__icon button__icon--small"
+
+// bem('button', { tertiary: true });      // TypeScript error: unknown modifier
+// bem('button', 'label');                  // TypeScript error: unknown element
 ```
 
-#### Returns
+### 3. Merge class names
 
-The function returns a **BEM generator function** that accepts:
-
-- **`blockName`** (`keyof B`): The name of the block.
-- **`blockModifiersOrElementName`**:
-  - A record of block modifiers.
-  - Or the name of an element (`keyof B[BlockName]['elements']`).
-- **`elementModifiers`** _(optional)_: A record of element modifiers, if applicable.
-
-## SCSS Integration
-
-Typed BEM allows you to synchronize your TypeScript definitions with your SCSS structure by generating SCSS files programmatically.
-
-### SCSS Generator Script
+Use `uniqueClassNames` to combine dynamic class name fragments while removing duplicates and falsy values.
 
 ```typescript
-const bemDefinition = {
-	button: {
-		modifiers: new Set(['primary', 'secondary']),
-		elements: {
-			icon: { modifiers: new Set(['small', 'large']) },
-			text: { modifiers: null },
-		},
-	},
-	alert: {
-		modifiers: new Set(['success', 'error']),
-		elements: {
-			container: { modifiers: new Set(['padded']) },
-		},
-	},
-} as const;
+import { uniqueClassNames } from 'typed-bem';
 
-// Generate SCSS file
-generateBemScssFile(bemDefinition, './bem-structure');
+const className = uniqueClassNames(
+  'button',
+  bem('button', 'icon', { small: props.isSmall }),
+  props.className,
+);
+// -> every class appears only once
 ```
 
-### Example Output (`bem-structure.scss`)
+### 4. Generate a SCSS skeleton (optional)
+
+Typed BEM can mirror your schema into an SCSS file. When creating `Set` values for modifiers, cast array literals with `as const`
+so the literal types stay intact.
+
+```typescript
+import { generateBemScssFile } from 'typed-bem/scss';
+
+const buttonBemDefinition: ButtonBem = {
+  button: {
+    modifiers: new Set(['primary', 'secondary'] as const),
+    elements: {
+      icon: { modifiers: new Set(['small', 'large'] as const) },
+      text: { modifiers: null },
+    },
+  },
+};
+
+generateBemScssFile(buttonBemDefinition, './button');
+```
+
+The generator writes a file named `button.scss` next to your script:
 
 ```scss
 .button {
-	&--primary {
-	}
-	&--secondary {
-	}
-	&__icon {
-		&--small {
-		}
-		&--large {
-		}
-	}
-	&__text {
-	}
-}
-
-.alert {
-	&--success {
-	}
-	&--error {
-	}
-	&__container {
-		&--padded {
-		}
-	}
+  &--primary {
+    // Styles for button--primary
+  }
+  &--secondary {
+    // Styles for button--secondary
+  }
+  &__icon {
+    &--small {
+      // Styles for button__icon--small
+    }
+    &--large {
+      // Styles for button__icon--large
+    }
+  }
+  &__text {
+    // Styles for button__text
+  }
 }
 ```
 
-## Why Use `typed-bem`?
+## API Reference
 
-- **Built on Easy-BEM**: Combines the simplicity of `easy-bem` with strict TypeScript typing.
-- **SCSS Synchronization**: Generate SCSS files from your TypeScript definitions for consistency.
-- **Type Safety**: Catch invalid combinations of blocks, elements, and modifiers at compile time.
-- **Scalable Design Systems**: Perfect for large projects with multiple components.
+### `generateBemClassNames`
+
+```typescript
+declare function generateBemClassNames<B extends BemBlocks<BemSchema>>(): TypedBemFunction<B>;
+```
+
+- **Returns** a cached `bem` function.
+- **Parameters**
+  - `blockName` – a key from your schema.
+  - `blockModifiersOrElementName` – either a partial record of block modifiers or an element name.
+  - `elementModifiers` – (optional) a partial record of element modifiers when targeting an element.
+
+### `uniqueClassNames`
+
+```typescript
+declare function uniqueClassNames(...chunks: (string | undefined | null | false)[]): string;
+```
+
+- Flattens the provided arguments into a single class string.
+- Ignores falsy values and empty strings.
+- Removes duplicate class names in the final result.
+
+### `generateBemScssFile`
+
+```typescript
+declare function generateBemScssFile<B extends BemBlocks<BemSchema>>(definition: B, outputPath: string): void;
+```
+
+- Writes `<outputPath>.scss` in the current working directory.
+- Accepts the same schema object you use to generate class names.
+- Intended for Node.js environments; import it from `typed-bem/scss`.
 
 ## License
 
-Typed BEM is licensed under the [MIT License](https://github.com/deleonio/typed-bem-class-generator/blob/main/LICENSE).
+Typed BEM is distributed under the [MIT License](https://github.com/deleonio/typed-bem-class-generator/blob/main/LICENSE).
