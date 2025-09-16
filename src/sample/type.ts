@@ -1,5 +1,3 @@
-import { S } from 'vitest/dist/chunks/config.d.UqE-KR0o';
-
 export type AlertBem = {
 	alert: {
 		elements: {

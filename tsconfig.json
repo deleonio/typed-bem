@@ -2,10 +2,11 @@
 	"compilerOptions": {
 		"module": "ESNext",
 		"target": "ES2020",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"strict": true
+		"strict": true,
+		"downlevelIteration": true
 	},
 	"include": ["src", "test"],
 	"exclude": ["node_modules"]
