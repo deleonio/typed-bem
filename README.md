@@ -20,6 +20,10 @@ support. You describe the valid blocks, elements, and modifiers once, and Typed 
 By centralizing your BEM schema in TypeScript you remove guesswork, prevent typos, and keep styles synchronized across your
 project.
 
+## Reference Project
+
+This library is used in the [KoliBri](https://github.com/public-ui/kolibri) project - an accessible web component library that provides a comprehensive set of UI components following accessibility best practices. KoliBri demonstrates real-world usage of Typed BEM for maintaining consistent and type-safe BEM class names across a large component library.
+
 ## Key Features
 
 - **Type-Safe API** – Catch invalid blocks, elements, or modifiers during development instead of at runtime.
