@@ -1,6 +1,6 @@
 {
 	"name": "typed-bem",
-	"version": "1.0.0-rc.8",
+	"version": "1.0.0",
 	"author": {
 		"name": "Martin Oppitz",
 		"email": "github@martinoppitz.com",
@@ -8,10 +8,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/deleonio/typed-bem-class-generator.git"
+		"url": "https://github.com/deleonio/typed-bem.git"
 	},
 	"bugs": {
-		"url": "https://github.com/deleonio/typed-bem-class-generator/issues",
+		"url": "https://github.com/deleonio/typed-bem/issues",
 		"email": "github@martinoppitz.com"
 	},
 	"keywords": [
