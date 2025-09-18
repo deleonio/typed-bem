@@ -31,7 +31,7 @@
 	"devDependencies": {
 		"@eslint/js": "9.35.0",
 		"@types/chai": "5.2.2",
-		"@types/node": "24.5.0",
+		"@types/node": "24.5.2",
 		"@typescript-eslint/parser": "8.44.0",
 		"chai": "5.3.3",
 		"eslint": "9.35.0",
@@ -48,7 +48,7 @@
 		"build": "unbuild",
 		"clean": "git clean -f -d -X",
 		"dev": "nodemon src/index.ts",
-		"format": "prettier {src,test}/**/*",
+		"format": "prettier --check {src,test}/**/*",
 		"lint": "tsc --noEmit && eslint {src,test}/**/*",
 		"prepare": "npm run build && npm run format && npm run test && npm run unused",
 		"smoketest": "pnpm clean && pnpm i && pnpm build && pnpm format && pnpm lint && pnpm test && pnpm unused",
