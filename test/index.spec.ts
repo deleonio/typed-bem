@@ -3,124 +3,212 @@ import { describe, it } from 'vitest';
 import { generateBemClassNames } from '../src/browser';
 import type { MyBlocks } from './bem-schema';
 
-describe('typedBem', () => {
+describe('typedBem - unified API consistency', () => {
 	const bem = generateBemClassNames<MyBlocks>();
 
-	it('should generate block class name with modifier', () => {
-		const result = bem('collapsable', { accordion: true });
-		expect(result).to.equal('collapsable collapsable--accordion');
-	});
+	describe('block class generation', () => {
+		it('should generate block class name with modifier', () => {
+			const expected = 'collapsable collapsable--accordion';
+			const blockBem = bem.forBlock('collapsable');
 
-	it('should generate element class name with modifier', () => {
-		const result = bem('collapsable', 'button', { active: true });
-		expect(result).to.equal('collapsable__button collapsable__button--active');
-	});
-
-	it('should generate block class name without modifier', () => {
-		const result = bem('collapsable');
-		expect(result).to.equal('collapsable');
-	});
-
-	it('should generate element class name without modifier', () => {
-		const result = bem('collapsable', 'content');
-		expect(result).to.equal('collapsable__content');
-	});
-
-	it('should ignore false modifiers', () => {
-		const result = bem('collapsable', 'button', { active: false, disabled: true });
-		expect(result).to.equal('collapsable__button collapsable__button--disabled');
-	});
-
-	it('should handle multiple true modifiers', () => {
-		const result = bem('collapsable', { accordion: true, details: true });
-		expect(result).to.equal('collapsable collapsable--accordion collapsable--details');
-	});
-
-	it('should handle multiple false modifiers', () => {
-		const result = bem('collapsable', { accordion: false, details: false });
-		expect(result).to.equal('collapsable');
-	});
-
-	it('should handle mixed true and false modifiers', () => {
-		const result = bem('collapsable', { accordion: true, details: false });
-		expect(result).to.equal('collapsable collapsable--accordion');
-	});
-
-	it('should handle element with multiple true modifiers', () => {
-		const result = bem('collapsable', 'button', { active: true, disabled: true });
-		expect(result).to.equal('collapsable__button collapsable__button--active collapsable__button--disabled');
-	});
-
-	it('should handle element with multiple false modifiers', () => {
-		const result = bem('collapsable', 'button', { active: false, disabled: false });
-		expect(result).to.equal('collapsable__button');
-	});
-
-	it('should handle element with mixed true and false modifiers', () => {
-		const result = bem('collapsable', 'button', { active: true, disabled: false });
-		expect(result).to.equal('collapsable__button collapsable__button--active');
-	});
-
-	it('should generate header block class name with modifier', () => {
-		const result = bem('header');
-		expect(result).to.equal('header');
-	});
-
-	it('should generate header element class name with modifier', () => {
-		const result = bem('header', 'title', { large: true });
-		expect(result).to.equal('header__title header__title--large');
-	});
-
-	it('should generate footer block class name without modifier', () => {
-		const result = bem('footer');
-		expect(result).to.equal('footer');
-	});
-
-	it('should generate footer element class name with modifier', () => {
-		const result = bem('footer', 'link', { visited: true });
-		expect(result).to.equal('footer__link footer__link--visited');
-	});
-
-	it('should generate header element class name without modifier', () => {
-		const result = bem('header', 'nav');
-		expect(result).to.equal('header__nav');
-	});
-
-	it('should generate footer element class name without modifier', () => {
-		const result = bem('footer', 'info');
-		expect(result).to.equal('footer__info');
-	});
-
-	it('should handle multiple true modifiers for header', () => {
-		const result = bem('header', 'nav');
-		expect(result).to.equal('header__nav');
-	});
-
-	it('should handle multiple false modifiers for header', () => {
-		const result = bem('header', 'title');
-		expect(result).to.equal('header__title');
-	});
-
-	it('should handle mixed true and false modifiers for header', () => {
-		const result = bem('header', 'title', {
-			large: true,
+			// All methods should produce identical results
+			expect(bem('collapsable', { accordion: true })).to.equal(expected);
+			expect(blockBem({ accordion: true })).to.equal(expected);
 		});
-		expect(result).to.equal('header__title header__title--large');
+
+		it('should generate block class name without modifier', () => {
+			const expected = 'collapsable';
+			const blockBem = bem.forBlock('collapsable');
+
+			expect(bem('collapsable')).to.equal(expected);
+			expect(blockBem()).to.equal(expected);
+		});
+
+		it('should handle multiple true modifiers', () => {
+			const expected = 'collapsable collapsable--accordion collapsable--details';
+			const blockBem = bem.forBlock('collapsable');
+
+			expect(bem('collapsable', { accordion: true, details: true })).to.equal(expected);
+			expect(blockBem({ accordion: true, details: true })).to.equal(expected);
+		});
+
+		it('should handle multiple false modifiers', () => {
+			const expected = 'collapsable';
+			const blockBem = bem.forBlock('collapsable');
+
+			expect(bem('collapsable', { accordion: false, details: false })).to.equal(expected);
+			expect(blockBem({ accordion: false, details: false })).to.equal(expected);
+		});
+
+		it('should handle mixed true and false modifiers', () => {
+			const expected = 'collapsable collapsable--accordion';
+			const blockBem = bem.forBlock('collapsable');
+
+			expect(bem('collapsable', { accordion: true, details: false })).to.equal(expected);
+			expect(blockBem({ accordion: true, details: false })).to.equal(expected);
+		});
 	});
 
-	it('should handle element with multiple true modifiers for footer', () => {
-		const result = bem('footer', 'info', { detailed: true, summary: true });
-		expect(result).to.equal('footer__info footer__info--detailed footer__info--summary');
+	describe('element class generation', () => {
+		it('should generate element class name with modifier', () => {
+			const expected = 'collapsable__button collapsable__button--active';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('button');
+
+			expect(bem('collapsable', 'button', { active: true })).to.equal(expected);
+			expect(blockBem('button', { active: true })).to.equal(expected);
+			expect(elementBem({ active: true })).to.equal(expected);
+		});
+
+		it('should generate element class name without modifier', () => {
+			const expected = 'collapsable__content';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('content');
+
+			expect(bem('collapsable', 'content')).to.equal(expected);
+			expect(blockBem('content')).to.equal(expected);
+			expect(elementBem()).to.equal(expected);
+		});
+
+		it('should ignore false modifiers', () => {
+			const expected = 'collapsable__button collapsable__button--disabled';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('button');
+
+			expect(bem('collapsable', 'button', { active: false, disabled: true })).to.equal(expected);
+			expect(blockBem('button', { active: false, disabled: true })).to.equal(expected);
+			expect(elementBem({ active: false, disabled: true })).to.equal(expected);
+		});
+
+		it('should handle element with multiple true modifiers', () => {
+			const expected = 'collapsable__button collapsable__button--active collapsable__button--disabled';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('button');
+
+			expect(bem('collapsable', 'button', { active: true, disabled: true })).to.equal(expected);
+			expect(blockBem('button', { active: true, disabled: true })).to.equal(expected);
+			expect(elementBem({ active: true, disabled: true })).to.equal(expected);
+		});
+
+		it('should handle element with multiple false modifiers', () => {
+			const expected = 'collapsable__button';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('button');
+
+			expect(bem('collapsable', 'button', { active: false, disabled: false })).to.equal(expected);
+			expect(blockBem('button', { active: false, disabled: false })).to.equal(expected);
+			expect(elementBem({ active: false, disabled: false })).to.equal(expected);
+		});
+
+		it('should handle element with mixed true and false modifiers', () => {
+			const expected = 'collapsable__button collapsable__button--active';
+			const blockBem = bem.forBlock('collapsable');
+			const elementBem = blockBem.forElement('button');
+
+			expect(bem('collapsable', 'button', { active: true, disabled: false })).to.equal(expected);
+			expect(blockBem('button', { active: true, disabled: false })).to.equal(expected);
+			expect(elementBem({ active: true, disabled: false })).to.equal(expected);
+		});
 	});
 
-	it('should handle element with multiple false modifiers for footer', () => {
-		const result = bem('footer', 'info', { detailed: false, summary: false });
-		expect(result).to.equal('footer__info');
+	describe('header block tests', () => {
+		it('should generate header block class name', () => {
+			const expected = 'header';
+			const blockBem = bem.forBlock('header');
+
+			expect(bem('header')).to.equal(expected);
+			expect(blockBem()).to.equal(expected);
+		});
+
+		it('should generate header element class name with modifier', () => {
+			const expected = 'header__title header__title--large';
+			const blockBem = bem.forBlock('header');
+			const elementBem = blockBem.forElement('title');
+
+			expect(bem('header', 'title', { large: true })).to.equal(expected);
+			expect(blockBem('title', { large: true })).to.equal(expected);
+			expect(elementBem({ large: true })).to.equal(expected);
+		});
+
+		it('should generate header element class name without modifier', () => {
+			const expected = 'header__nav';
+			const blockBem = bem.forBlock('header');
+			const elementBem = blockBem.forElement('nav');
+
+			expect(bem('header', 'nav')).to.equal(expected);
+			expect(blockBem('nav')).to.equal(expected);
+			expect(elementBem()).to.equal(expected);
+		});
+
+		it('should handle multiple modifiers for header title', () => {
+			const expected = 'header__title header__title--large header__title--small';
+			const blockBem = bem.forBlock('header');
+			const elementBem = blockBem.forElement('title');
+
+			expect(bem('header', 'title', { large: true, small: true })).to.equal(expected);
+			expect(blockBem('title', { large: true, small: true })).to.equal(expected);
+			expect(elementBem({ large: true, small: true })).to.equal(expected);
+		});
 	});
 
-	it('should handle element with mixed true and false modifiers for footer', () => {
-		const result = bem('footer', 'info', { detailed: true, summary: false });
-		expect(result).to.equal('footer__info footer__info--detailed');
+	describe('footer block tests', () => {
+		it('should generate footer block class name', () => {
+			const expected = 'footer';
+			const blockBem = bem.forBlock('footer');
+
+			expect(bem('footer')).to.equal(expected);
+			expect(blockBem()).to.equal(expected);
+		});
+
+		it('should generate footer element class name with modifier', () => {
+			const expected = 'footer__link footer__link--visited';
+			const blockBem = bem.forBlock('footer');
+			const elementBem = blockBem.forElement('link');
+
+			expect(bem('footer', 'link', { visited: true })).to.equal(expected);
+			expect(blockBem('link', { visited: true })).to.equal(expected);
+			expect(elementBem({ visited: true })).to.equal(expected);
+		});
+
+		it('should generate footer element class name without modifier', () => {
+			const expected = 'footer__info';
+			const blockBem = bem.forBlock('footer');
+			const elementBem = blockBem.forElement('info');
+
+			expect(bem('footer', 'info')).to.equal(expected);
+			expect(blockBem('info')).to.equal(expected);
+			expect(elementBem()).to.equal(expected);
+		});
+
+		it('should handle element with multiple true modifiers for footer', () => {
+			const expected = 'footer__info footer__info--detailed footer__info--summary';
+			const blockBem = bem.forBlock('footer');
+			const elementBem = blockBem.forElement('info');
+
+			expect(bem('footer', 'info', { detailed: true, summary: true })).to.equal(expected);
+			expect(blockBem('info', { detailed: true, summary: true })).to.equal(expected);
+			expect(elementBem({ detailed: true, summary: true })).to.equal(expected);
+		});
+
+		it('should handle element with multiple false modifiers for footer', () => {
+			const expected = 'footer__info';
+			const blockBem = bem.forBlock('footer');
+			const elementBem = blockBem.forElement('info');
+
+			expect(bem('footer', 'info', { detailed: false, summary: false })).to.equal(expected);
+			expect(blockBem('info', { detailed: false, summary: false })).to.equal(expected);
+			expect(elementBem({ detailed: false, summary: false })).to.equal(expected);
+		});
+
+		it('should handle element with mixed true and false modifiers for footer', () => {
+			const expected = 'footer__info footer__info--detailed';
+			const blockBem = bem.forBlock('footer');
+			const elementBem = blockBem.forElement('info');
+
+			expect(bem('footer', 'info', { detailed: true, summary: false })).to.equal(expected);
+			expect(blockBem('info', { detailed: true, summary: false })).to.equal(expected);
+			expect(elementBem({ detailed: true, summary: false })).to.equal(expected);
+		});
 	});
 });
 
