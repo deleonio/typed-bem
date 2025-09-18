@@ -175,6 +175,9 @@ const componentDefinition: ComponentsSchema = {
 };
 
 generateBemScssFile(componentDefinition, './components');
+
+// Generate with CSS layer support
+generateBemScssFile(componentDefinition, './components', { layer: 'components' });
 ```
 
 The generator writes a file named `components.scss` next to your script:
@@ -217,6 +220,52 @@ The generator writes a file named `components.scss` next to your script:
 	}
 	&__field {
 		// Styles for input__field
+	}
+}
+```
+
+When using the `layer` option, the output will be wrapped in a CSS layer:
+
+```scss
+@layer components {
+	.button {
+		&--primary {
+			// Styles for button--primary
+		}
+		&--secondary {
+			// Styles for button--secondary
+		}
+		&__icon {
+			&--small {
+				// Styles for button__icon--small
+			}
+			&--large {
+				// Styles for button__icon--large
+			}
+		}
+		&__text {
+			// Styles for button__text
+		}
+	}
+
+	.input {
+		&--error {
+			// Styles for input--error
+		}
+		&--success {
+			// Styles for input--success
+		}
+		&__label {
+			&--required {
+				// Styles for input__label--required
+			}
+			&--disabled {
+				// Styles for input__label--disabled
+			}
+		}
+		&__field {
+			// Styles for input__field
+		}
 	}
 }
 ```
@@ -345,12 +394,23 @@ declare function uniqueClassNames(...chunks: (string | undefined | null | false)
 ### `generateBemScssFile`
 
 ```typescript
-declare function generateBemScssFile<B extends BemBlocks<BemSchema>>(definition: B, outputPath: string): void;
+declare function generateBemScssFile<B extends BemBlocks<BemSchema>>(definition: B, outputPath: string, options?: GenerateBemScssOptions): void;
+
+interface GenerateBemScssOptions {
+	layer?: string;
+}
 ```
 
 - Writes `<outputPath>.scss` in the current working directory.
 - Accepts the same schema object you use to generate class names.
+- **New**: Supports an optional `options` parameter with a `layer` property for CSS layer support.
 - Intended for Node.js environments; import it from `typed-bem/scss`.
+
+**Layer Support:**
+
+- When `options.layer` is provided with a non-empty string, the entire SCSS output will be wrapped in a CSS `@layer` rule.
+- This is useful for modern CSS layer management and cascade ordering.
+- Example: `generateBemScssFile(schema, './styles', { layer: 'components' })` generates styles wrapped in `@layer components { ... }`.
 
 ## License
 
