@@ -45,37 +45,51 @@ yarn add typed-bem
 
 ## Quick Start
 
-### 1. Describe your schema
+### 1. Describe your schemas
 
 Define a TypeScript type that captures the blocks, their elements, and the allowed modifiers. Use `Set` when modifiers are
-allowed and `null` when they are not.
+allowed and `null` when they are not. **Best Practice:** Define all your components in a central schema for better maintainability.
 
 ```typescript
 import { generateBemClassNames } from 'typed-bem';
 
-type ButtonBem = {
-  button: {
-    modifiers: Set<'primary' | 'secondary'> | null;
-    elements: {
-      icon: {
-        modifiers: Set<'small' | 'large'> | null;
-      };
-      text: {
-        modifiers: null;
-      };
-    };
-  };
+// Central schemas for all components (recommended approach)
+type ComponentsSchema = {
+	button: {
+		modifiers: Set<'primary' | 'secondary'> | null;
+		elements: {
+			icon: {
+				modifiers: Set<'small' | 'large'> | null;
+			};
+			text: {
+				modifiers: null;
+			};
+		};
+	};
+	input: {
+		modifiers: Set<'error' | 'success'> | null;
+		elements: {
+			label: {
+				modifiers: Set<'required' | 'disabled'> | null;
+			};
+			field: {
+				modifiers: null;
+			};
+		};
+	};
 };
 ```
 
 ### 2. Generate class names
 
-`generateBemClassNames` reads your schema and returns a strongly typed helper. Invalid combinations immediately trigger
+`generateBemClassNames` reads your schemas and returns a strongly typed helper. Invalid combinations immediately trigger
 TypeScript errors.
 
 ```typescript
-const bem = generateBemClassNames<ButtonBem>();
+// Create a single BEM instance for all components
+const bem = generateBemClassNames<ComponentsSchema>();
 
+// Direct usage (always works)
 bem('button');
 // "button"
 
@@ -89,22 +103,53 @@ bem('button', 'icon', { small: true });
 // bem('button', 'label');                  // TypeScript error: unknown element
 ```
 
-### 3. Merge class names
+### 3. Alternative Short Syntax
+
+For components where you work primarily with one block or element, you can use the `forBlock()` and `forElement()` methods. These are optional shortcuts for convenience.
+
+#### Block-bound generators
+
+```typescript
+// Create block-specific generators
+const buttonBem = bem.forBlock('button');
+const inputBem = bem.forBlock('input');
+
+// Now you can omit the block name!
+buttonBem(); // "button"
+buttonBem({ primary: true }); // "button button--primary"
+buttonBem('icon', { small: true }); // "button__icon button__icon--small"
+
+inputBem({ error: true }); // "input input--error"
+inputBem('label', { required: true }); // "input__label input__label--required"
+```
+
+#### Element-bound generators
+
+```typescript
+// Create element-specific generators
+const buttonIconBem = buttonBem.forElement('icon');
+const inputLabelBem = inputBem.forElement('label');
+
+// Ultra-short syntax for common elements
+buttonIconBem(); // "button__icon"
+buttonIconBem({ small: true }); // "button__icon button__icon--small"
+
+inputLabelBem({ required: true }); // "input__label input__label--required"
+```
+
+These methods are particularly useful for repetitive tasks but are not required for general usage.
+
+### 4. Merge class names
 
 Use `uniqueClassNames` to combine dynamic class name fragments while removing duplicates and falsy values.
 
 ```typescript
 import { uniqueClassNames } from 'typed-bem';
 
-const className = uniqueClassNames(
-  'button',
-  bem('button', 'icon', { small: props.isSmall }),
-  props.className,
-);
-// -> every class appears only once
+const className = uniqueClassNames(bem('button'), bem('button', 'icon', { small: props.isSmall }), props.className);
 ```
 
-### 4. Generate a SCSS skeleton (optional)
+### 5. Generate a SCSS skeleton (optional)
 
 Typed BEM can mirror your schema into an SCSS file. When creating `Set` values for modifiers, cast array literals with `as const`
 so the literal types stay intact.
@@ -112,41 +157,143 @@ so the literal types stay intact.
 ```typescript
 import { generateBemScssFile } from 'typed-bem/scss';
 
-const buttonBemDefinition: ButtonBem = {
-  button: {
-    modifiers: new Set(['primary', 'secondary'] as const),
-    elements: {
-      icon: { modifiers: new Set(['small', 'large'] as const) },
-      text: { modifiers: null },
-    },
-  },
+const componentDefinition: ComponentsSchema = {
+	button: {
+		modifiers: new Set(['primary', 'secondary'] as const),
+		elements: {
+			icon: { modifiers: new Set(['small', 'large'] as const) },
+			text: { modifiers: null },
+		},
+	},
+	input: {
+		modifiers: new Set(['error', 'success'] as const),
+		elements: {
+			label: { modifiers: new Set(['required', 'disabled'] as const) },
+			field: { modifiers: null },
+		},
+	},
 };
 
-generateBemScssFile(buttonBemDefinition, './button');
+generateBemScssFile(componentDefinition, './components');
 ```
 
-The generator writes a file named `button.scss` next to your script:
+The generator writes a file named `components.scss` next to your script:
 
 ```scss
 .button {
-  &--primary {
-    // Styles for button--primary
-  }
-  &--secondary {
-    // Styles for button--secondary
-  }
-  &__icon {
-    &--small {
-      // Styles for button__icon--small
-    }
-    &--large {
-      // Styles for button__icon--large
-    }
-  }
-  &__text {
-    // Styles for button__text
-  }
+	&--primary {
+		// Styles for button--primary
+	}
+	&--secondary {
+		// Styles for button--secondary
+	}
+	&__icon {
+		&--small {
+			// Styles for button__icon--small
+		}
+		&--large {
+			// Styles for button__icon--large
+		}
+	}
+	&__text {
+		// Styles for button__text
+	}
 }
+
+.input {
+	&--error {
+		// Styles for input--error
+	}
+	&--success {
+		// Styles for input--success
+	}
+	&__label {
+		&--required {
+			// Styles for input__label--required
+		}
+		&--disabled {
+			// Styles for input__label--disabled
+		}
+	}
+	&__field {
+		// Styles for input__field
+	}
+}
+```
+
+## Usage Patterns
+
+### Central Schema Registration (Recommended)
+
+Instead of creating separate `generateBemClassNames` instances for each component, register all components in a central schema:
+
+```typescript
+// schema.ts - Central BEM schema
+type AppBemSchema = {
+	header: {
+		/* ... */
+	};
+	navigation: {
+		/* ... */
+	};
+	button: {
+		/* ... */
+	};
+	input: {
+		/* ... */
+	};
+	modal: {
+		/* ... */
+	};
+	// ... all your components
+};
+
+export const bem = generateBemClassNames<AppBemSchema>();
+```
+
+```typescript
+// components/Button.tsx
+import { bem } from '../schema';
+
+const buttonBem = bem.forBlock('button');
+
+export function Button({ variant, size, children }) {
+  return (
+    <button className={buttonBem({ [variant]: true })}>
+      {children}
+    </button>
+  );
+}
+```
+
+### Migration from Direct Usage
+
+The new API is fully backward compatible. You can migrate incrementally:
+
+```typescript
+// Before (still works)
+const oldStyle = bem('button', { primary: true });
+
+// After (more convenient for single-block components)
+const buttonBem = bem.forBlock('button');
+const newStyle = buttonBem({ primary: true });
+```
+
+### Component-Specific Patterns
+
+```typescript
+// For components with frequent element usage
+const modalBem = bem.forBlock('modal');
+const modalHeaderBem = modalBem.forElement('header');
+const modalBodyBem = modalBem.forElement('body');
+const modalFooterBem = modalBem.forElement('footer');
+
+// Usage in component
+<div className={modalBem({ open: isOpen })}>
+  <header className={modalHeaderBem()}>Title</header>
+  <main className={modalBodyBem()}>Content</main>
+  <footer className={modalFooterBem()}>Actions</footer>
+</div>
 ```
 
 ## API Reference
@@ -157,11 +304,33 @@ The generator writes a file named `button.scss` next to your script:
 declare function generateBemClassNames<B extends BemBlocks<BemSchema>>(): TypedBemFunction<B>;
 ```
 
-- **Returns** a cached `bem` function.
+- **Returns** a cached `bem` function with additional methods.
 - **Parameters**
   - `blockName` – a key from your schema.
   - `blockModifiersOrElementName` – either a partial record of block modifiers or an element name.
   - `elementModifiers` – (optional) a partial record of element modifiers when targeting an element.
+
+#### Extended Methods
+
+- **`.forBlock(blockName)`** – Returns a block-bound generator that doesn't require the block name.
+- **`.forElement(elementName)`** – Available on block-bound generators, returns an element-bound generator.
+
+**Example:**
+
+```typescript
+const bem = generateBemClassNames<Schema>();
+
+// Direct usage
+bem('button', { primary: true });
+
+// Block-bound usage
+const buttonBem = bem.forBlock('button');
+buttonBem({ primary: true });
+
+// Element-bound usage
+const iconBem = buttonBem.forElement('icon');
+iconBem({ small: true });
+```
 
 ### `uniqueClassNames`
 
