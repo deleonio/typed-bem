@@ -1,44 +1,59 @@
 import { writeFileSync } from 'fs';
 import { BemBlocks, BemSchema } from '../types';
 
-function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, outputPath: string) {
+export type GenerateBemScssOptions = {
+	layer?: string;
+};
+
+function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, outputPath: string, options?: GenerateBemScssOptions) {
 	const scssLines: string[] = [];
+
+	// Add CSS layer if specified
+	if (options?.layer) {
+		scssLines.push(`@layer ${options.layer} {`);
+	}
 
 	Object.entries(bemDefinition).forEach(([blockName, blockDefinition]) => {
 		// Add the block
-		scssLines.push(`.${blockName} {`);
+		const indent = options?.layer ? '  ' : '';
+		scssLines.push(`${indent}.${blockName} {`);
 
 		// Process block modifiers
 		if (blockDefinition.modifiers && blockDefinition.modifiers instanceof Set) {
 			blockDefinition.modifiers.forEach((modifier) => {
-				scssLines.push(`  &--${modifier} {`);
-				scssLines.push(`    // Styles for ${blockName}--${modifier}`);
-				scssLines.push(`  }`);
+				scssLines.push(`${indent}  &--${modifier} {`);
+				scssLines.push(`${indent}    // Styles for ${blockName}--${modifier}`);
+				scssLines.push(`${indent}  }`);
 			});
 		}
 
 		// Process elements
 		if (blockDefinition.elements) {
 			Object.entries(blockDefinition.elements).forEach(([elementName, elementDefinition]) => {
-				scssLines.push(`  &__${elementName} {`);
+				scssLines.push(`${indent}  &__${elementName} {`);
 
 				// Process element modifiers
 				if (elementDefinition.modifiers && elementDefinition.modifiers instanceof Set) {
 					elementDefinition.modifiers.forEach((modifier) => {
-						scssLines.push(`    &--${modifier} {`);
-						scssLines.push(`      // Styles for ${blockName}__${elementName}--${modifier}`);
-						scssLines.push(`    }`);
+						scssLines.push(`${indent}    &--${modifier} {`);
+						scssLines.push(`${indent}      // Styles for ${blockName}__${elementName}--${modifier}`);
+						scssLines.push(`${indent}    }`);
 					});
 				} else {
-					scssLines.push(`    // Styles for ${blockName}__${elementName}`);
+					scssLines.push(`${indent}    // Styles for ${blockName}__${elementName}`);
 				}
 
-				scssLines.push(`  }`);
+				scssLines.push(`${indent}  }`);
 			});
 		}
 
-		scssLines.push(`}`);
+		scssLines.push(`${indent}}`);
 	});
+
+	// Close CSS layer if specified
+	if (options?.layer) {
+		scssLines.push('}');
+	}
 
 	// Write the SCSS structure to the output file
 	writeFileSync(`${outputPath}.scss`, scssLines.join('\n'), 'utf8');
