@@ -8,14 +8,22 @@ export type GenerateBemScssOptions = {
 function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, outputPath: string, options?: GenerateBemScssOptions) {
 	const scssLines: string[] = [];
 
-	// Add CSS layer if specified
-	if (options?.layer) {
+	// Check for explicitly empty layer and warn
+	const shouldUseLayer = options?.layer !== undefined && options.layer !== '';
+	const hasEmptyLayer = options?.layer === '';
+
+	if (hasEmptyLayer) {
+		console.warn('Warning: Empty layer name provided. No CSS layer will be generated.');
+	}
+
+	// Add CSS layer if specified and not empty
+	if (shouldUseLayer) {
 		scssLines.push(`@layer ${options.layer} {`);
 	}
 
 	Object.entries(bemDefinition).forEach(([blockName, blockDefinition]) => {
 		// Add the block
-		const indent = options?.layer ? '  ' : '';
+		const indent = shouldUseLayer ? '  ' : '';
 		scssLines.push(`${indent}.${blockName} {`);
 
 		// Process block modifiers
@@ -50,8 +58,8 @@ function generateBemScssFile<B extends BemBlocks<BemSchema>>(bemDefinition: B, o
 		scssLines.push(`${indent}}`);
 	});
 
-	// Close CSS layer if specified
-	if (options?.layer) {
+	// Close CSS layer if specified and not empty
+	if (shouldUseLayer) {
 		scssLines.push('}');
 	}
 
